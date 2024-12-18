@@ -16,7 +16,11 @@ public :
 
 	
 private :
-	int sock = 0;
+	int clientFd;
     struct sockaddr_in serv_addr;
-    char buffer[BUFFER_SIZE] = {0};
+	std::string ipAddress;
+	std::string userName;
+	std::string nickName;
+	std::string realName;
+	bool valid;
 };

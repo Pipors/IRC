@@ -7,7 +7,7 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-int main() {
+int inti_client() {
     int sock = 0;
     struct sockaddr_in serv_addr;
     char buffer[BUFFER_SIZE] = {0};
@@ -23,7 +23,7 @@ int main() {
     serv_addr.sin_port = htons(PORT);
 
     // Convert IPv4 address from text to binary
-    if (inet_pton(AF_INET, "0.0.0.0", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, (const char *)INADDR_ANY, &serv_addr.sin_addr) <= 0) {
         perror("Invalid address or address not supported");
         return -1;
     }

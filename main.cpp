@@ -23,10 +23,10 @@ int main(int ac, char **av)
     while (true)
     {
         // Accept a connection
-        server.acceptConnection();
-        // Read data from clie);
+        server.acceptNewConnection();
+        // Read data from client);
         server.readData();
-        // Send response to clie);
+        // Send response to client);
         server.sendData("samaykom");
     }
     server.closeFd();

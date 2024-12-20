@@ -1,5 +1,5 @@
 all :
-	c++ main.cpp srcs/Client.cpp srcs/Server.cpp -o irc
+	c++ main.cpp  srcs/Server.cpp -o irc srcs/Client.cpp
 
 fclean :
 	rm irc

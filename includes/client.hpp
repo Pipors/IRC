@@ -5,19 +5,30 @@
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <cstdint> 
+#include <vector>
+#include <poll.h>
+#include <sstream>
 #include <unistd.h>
-
-
 
 class Client
 {
 public :
+	Client();
+	~Client();
 	void createSocketClient();
+	int connectionAttempting();
+	void setUserName(const std::string& value);
+	void setNickName(const std::string& value);
+	void setRealName(const std::string& value);
+	void setIp(const std::string& _ipAddres);
+	void setClientSock(int fd);
+	struct
+
 
 	
 private :
-	int clientFd;
-    struct sockaddr_in serv_addr;
+	int clientSock;
 	std::string ipAddress;
 	std::string userName;
 	std::string nickName;

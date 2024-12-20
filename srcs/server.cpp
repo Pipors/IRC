@@ -2,48 +2,51 @@
 
 Server::Server()
 {
-	this->addrlen = sizeof(this->address);
+	this->addrlen = sizeof(this->serverAddr);
 	strcpy(this->buffer, "anas");
 }
 
 Server::~Server()
 {
-	close(new_socket);
-    close(serverFd);
-	std::cout << new_socket << " " << serverFd << std::endl;
+	close(newSocket);
+    close(serverSock);
 }
 
+/* Creating the server and making it ready to recieve the incoming connections */
 void Server::serverInit(int port)
 {
-	struct pollfd fds;
-	if((this->serverFd = socket(AF_INET, SOCK_STREAM, 0)) < 3)
+	struct pollfd serverPoll;
+
+	this->serverSock = socket(AF_INET, SOCK_STREAM, 0);
+	if(this->serverSock < 3)
 		throwError("Socket Failed");
 
-	address.sin_family = AF_INET; // for IP v4
-    address.sin_addr.s_addr = INADDR_ANY; // any address
-    address.sin_port = htons((uint16_t)port); //port to communicate from
-	int optval = 1;
-	if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
-	{
-		std::cout << "chi l3ayba tema " << std::endl;
-	}
+	serverAddr.sin_family = AF_INET; // for IP v4
+    serverAddr.sin_addr.s_addr = INADDR_ANY; // any address
+    serverAddr.sin_port = htons((uint16_t)port); //port to communicate from
 
-	if (bind(serverFd, (struct sockaddr*)&address, sizeof(address)) < 0)
+	int optval = 1;
+	if (setsockopt(serverSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+		std::cout << "chi l3ayba tema " << std::endl;
+	
+	if (bind(serverSock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
 	{
-		close(serverFd);
+		close(serverSock);
 		throwError("Bind failed");
 	}
-	if (listen(serverFd, 3) < 0)
+
+	if (listen(serverSock, SOMAXCONN) == -1)
 	{
-        close(serverFd);
+        close(serverSock);
         throwError("Listen failed");
     }
-	fds.fd = serverFd;
-	fds.events = POLLIN;
-	fds.revents = 0;
+	serverPoll.fd = serverSock;
+	serverPoll.events = POLLIN;
+	serverPoll.revents = 0;
 
-	this->monitor.push_back(fds);
+	this->monitor.push_back(serverPoll);
 }
+
 
 void Server::throwError(const char* msg)
 {
@@ -51,25 +54,44 @@ void Server::throwError(const char* msg)
 	exit(EXIT_FAILURE);
 }
 
-void Server::acceptConnection()
+/* Accepting the incoming connection from the clients */
+void Server::acceptNewConnection()
 {
-	std::cout << "server FD : " << serverFd << std::endl;
- 	new_socket = accept(serverFd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
-	if (new_socket < 0) {
-        close(serverFd);
-        throwError("Accept failed");
+	Client client;
+	struct sockadd_in sockAddrClient;
+	struct pollfd clientPoll;
+
+ 	newSocket = accept(serverSock, (struct sockaddr*)&sockAddrClient, (socketlen_t)sizeof(sockAddrClient));
+	if (newSocket < 0) {
+        close(serverSock);
+        throwError("Conenction failed");
 	}
+	else 
+		std::cout << "Connection is established successfuly" << std::endl;
+	
+
+	clientPoll.fd = newSocket;
+	client.events = POLLIN; 
+
+	client.setIp(inet_ntoa(sockAddrClient.sin_addr));
+	client.setClientSock(newSocket);
+	this->clients.push_back(client);
+	this->monitor.push_back(clientPoll);
 }
 
-void Server::readData()
+/* Reading msg from client */
+void Server::recieveData(int newsocket)
 {
-	read(new_socket, buffer, BUFFER_SIZE);
-    std::cout << "Message from client: " << buffer << std::endl;
+	char message[1024];
+	int rbyte  = recv(newSocket, message, sizeof(message));
+    std::cout << "Message from client: " << message << std::endl;
 }
+
+/* Sending msg to client */
 void Server::sendData(const char* msg)
 {
-	send(new_socket, msg, strlen(msg), 0);
-    std::cout << "Hello message sent to client" << std::endl;
+	send(newSocket, msg, strlen(msg), 0);
+    std::cout << "Message sent to client" << msg << std::endl;
 }
 void Server::closeFd()
 {
@@ -79,5 +101,5 @@ void Server::closeFd()
 
 int Server::getServerFd() const
 {
-	return this->serverFd;
+	return this->serverSock;
 }

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
+// #include <sys/type.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <cstdint> 
 #include <vector>
@@ -10,6 +12,7 @@
 #include <sstream>
 #include <unistd.h>
 #include "Client.hpp"
+#include "Command.hpp"
 
 
 #define BUFFER_SIZE 1024 * 1024
@@ -20,20 +23,24 @@ class Server
 private	:
 	int serverSock;							//socket file descriptor for the server 
     int addrlen;
-    struct sockaddr_in serverAddr;
 	std::vector<struct pollfd> monitor;
 	std::vector<Client> clients;
+    struct sockaddr_in serverAddr;
+	Command command;
 
 public :
 
-	void serverInit(int port);
+	void setServerSock(int port);
+	void runningServer(int port);
 
 	void acceptNewConnection();
-	void recieveData();
-	void sendData(const char* msg);
+	void recieveData(int newsocket);
+	void sendData(int newsocket, const char* msg);
 	void closeFd();
-	void throwError(const char* msg);
+	void throwError(const char* msg, int fd);
 	int getServerFd() const;
+	std::vector<struct pollfd> getMonitor() const;
+	uint16_t getMonitorSize() const;
 
 	Server();
 	~Server();

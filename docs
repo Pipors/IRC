@@ -104,8 +104,8 @@ const char *inet_ntop(int af, const void *src, char *dst);
 /**
  * @brief Accepts a new incoming connection on a socket.
  *
- * @param sockfd The socket file descriptor.
- * @param addr   A pointer to a sockaddr structure that will contain the address of the connecting entity.
+ * @param sockfd The socket file descriptor of the side getting the connection "server".
+ * @param addr   A pointer to a sockaddr structure that will contain the address of the connecting entity "client".
  * @param addrlen A pointer to the length of the sockaddr structure.
  * 
  * @return On success, returns a new file descriptor for the accepted socket. On error, -1 is returned.
@@ -117,7 +117,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 /**
  * @brief Receives data from a connected socket.
  *
- * @param sockfd The socket file descriptor.
+ * @param sockfd The socket file descriptor of the recieving part "server" .
  * @param buf Pointer to the buffer where the received data will be stored.
  * @param len The maximum number of bytes to receive.
  * @param flags Specifies optional flags.

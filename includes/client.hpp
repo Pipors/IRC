@@ -23,7 +23,7 @@ public :
 	void setRealName(const std::string& value);
 	void setIp(const std::string& _ipAddres);
 	void setClientSock(int fd);
-	struct
+	int getClientSock() const;
 
 
 	

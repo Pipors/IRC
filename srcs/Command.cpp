@@ -14,6 +14,19 @@ std::string Command::getCommand() const
 	return this->command;
 }
 
+void Command::init(char * message)
+{
+
+	std::string parse = strtok(message, "\r\n");
+
+	while (!parse.empty())
+	{
+		command = parse.substr(0, parse.find(" "));
+		parameter = parse.substr(parse.find(" ") + 1);
+		parse = strtok(message, "\r\n");	
+	}
+}
+
 uint16_t Command::getCommandLen(const std::string& command) const
 {
 	return (strlen(command.c_str()));
@@ -24,25 +37,13 @@ void Command::setCommand(std::string command)
 	this->command = command;
 }
 
-
-void Command::parseCommand(std::string _command)
+std::string Command::getParameter()
 {
-	_command = this->getCommand();
-	std::string line;
+	return this->parameter;
+}
 
-	if (command[0] == '/')
-	{
-		std::cout << "Enter your command:\nINVITE\nKICK\nMODE\nTOPIC\n";
-		std::cin >> line;
-		if (line == "INVITE")
-			std::cout << "in";
-		else if (line == "KICK")
-			std::cout << "ki";
-		else if (line == "MODE")
-			std::cout << "mo";
-		else if (line == "TOPIC")
-			std::cout << "to";
-		else
-			std::cout << "Walo ben 3ami" << std::endl;
-	}
+
+void Command::setParameter(std::string param)
+{
+	this->parameter = param;
 }

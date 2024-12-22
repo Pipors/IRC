@@ -1,9 +1,29 @@
-all :
-	c++ main.cpp  srcs/Server.cpp -o irc srcs/Client.cpp srcs/Command.cpp
+CXX = @c++
 
-fclean :
-	rm irc
+CXXFLAGS = -std=c++98 -Wall -Wextra -Werror -fsanitize=address
+LDFLAGS = -fsanitize=address
 
-re : all
+SRCS = main.cpp srcs/Client.cpp srcs/Server.cpp srcs/Command.cpp 
+OBJS = $(SRCS:.cpp=.o)
 
-.PHONY : all re fclean
+EXEC = IRC
+
+all: $(EXEC)
+	@echo "\033[1;32mIRC SERVER AND CLIENT HAS BEEN COMPILED SUCCESSFULLY!\033[0m"
+	@echo "\033[1;32mUSAGE: ./IRC [PORT] [IP ADDRESS]\033[0m"
+	@echo "\033[1;32mYOUR IP ADDRESS IS:\033[0m"
+	@ipconfig getifaddr en0
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(EXEC): $(OBJS)
+	$(CXX) $(OBJS) -o $(EXEC) $(LDFLAGS)
+
+clean:
+	@rm -fr $(OBJS)
+
+fclean: clean
+	@rm -fr $(EXEC)
+
+re: fclean all

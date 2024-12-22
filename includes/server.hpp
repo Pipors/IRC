@@ -22,18 +22,22 @@ class Server
 {
 private	:
 	int serverSock;							//socket file descriptor for the server 
-    int addrlen;
+    // int addrlen;
 	std::vector<struct pollfd> monitor;
 	std::vector<Client> clients;
     struct sockaddr_in serverAddr;
+	std::string passwd;
+	std::string serverName;
 	Command command;
 
 public :
-
 	void setServerSock(int port);
-	void runningServer(int port);
+	void runningServer(int port, const char *av);
+	void parseCommand(int newsocket);
+	void checkPasswd(int newsocket, Client client);
 
 	void acceptNewConnection();
+	Client getClientFromVectorByFd(int _clientSock) const;
 	void recieveData(int newsocket);
 	void sendData(int newsocket, const char* msg);
 	void closeFd();
@@ -41,6 +45,7 @@ public :
 	int getServerFd() const;
 	std::vector<struct pollfd> getMonitor() const;
 	uint16_t getMonitorSize() const;
+	void setServerPassWd(const char* av);
 
 	Server();
 	~Server();

@@ -46,7 +46,7 @@ int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t
 /**
  * @brief Binds a socket to a specific address and port.
  *
- * @param sockfd The socket file descriptor.
+ * @param sockfd The socket file descriptor returned by socket function.
  * @param addr   A pointer to a sockaddr structure containing the address to bind to.
  * @param addrlen The length of the sockaddr structure.
  * @return 0 on success, -1 on failure.

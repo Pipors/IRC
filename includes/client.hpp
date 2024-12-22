@@ -18,12 +18,13 @@ public :
 	~Client();
 	void createSocketClient();
 	int connectionAttempting();
-	void setUserName(const std::string& value);
+	void setUserName(const std::string& );
 	void setNickName(const std::string& value);
 	void setRealName(const std::string& value);
 	void setIp(const std::string& _ipAddres);
 	void setClientSock(int fd);
 	int getClientSock() const;
+	void setValid(bool );
 
 
 	

@@ -44,3 +44,8 @@ int Client::getClientSock() const
 {
     return this->clientSock;
 }
+
+void Client::setValid(bool val)
+{
+    this->valid = val;
+}

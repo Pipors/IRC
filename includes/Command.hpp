@@ -25,12 +25,15 @@ public :
 	std::string getCommand() const;
 	uint16_t getCommandLen(const std::string& command) const;
 	void setCommand(std::string command);
-	void parseCommand(std::string command);
+	void setParameter(std::string param);
+	std::string getParameter(); 
 
+	void init(char *message);
 
 private :
 	std::string command;
-	uint16_t commandLen;
+	std::string parameter;
+	// uint16_t commandLen;
 };
 
 

@@ -2,13 +2,14 @@
 #include "includes/Client.hpp"
 
 
-int main(int ac, char **av)
+int main(int ac, const char **av)
 {
-    if (ac != 2)
+    if (ac != 3)
     {
         std::cerr << "Error!\nUsage : ./exe PORT PASSWD" << std::endl;
         return 0;
     }
+
 
     Server server;
     std::stringstream  s(av[1]);
@@ -17,7 +18,7 @@ int main(int ac, char **av)
     // Create socket, Bind to the port and start Listening for connections
 
 
-    server.runningServer(nb);
+    server.runningServer(nb, av[2]);
 
 
 

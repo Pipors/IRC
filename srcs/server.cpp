@@ -3,11 +3,20 @@
 Server::Server()
 {
 	this->passwd = "";
+	this->serverSock = 0;
+	this->monitor.clear();
+	this->clients.clear();
+	std::string serverName = "";
 }
 
 Server::~Server()
 {
 }
+/***********************************/
+/*                                 */
+/* FUNCTIONS SETTING UP THE SERVER */
+/*                                 */
+/***********************************/
 
 /* Creating the server and making it ready to recieve the incoming connections */
 void Server::setServerSock(int port)
@@ -24,35 +33,22 @@ void Server::setServerSock(int port)
 	if (sockopt < 0)
 		std::cout << "chi l3ayba tema " << std::endl;
 	
-	// memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET; // for IP v4
     serverAddr.sin_addr.s_addr = INADDR_ANY; // any address
     serverAddr.sin_port = htons((uint16_t)port); //port to communicate from
 
 	int _bind = bind(serverSock, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	if (_bind == -1)
-	{
 		throwError("Bind failed => ", serverSock);
-	}
 
 	if (listen(serverSock, SOMAXCONN) == -1)
-	{
         throwError("Listen failed", serverSock);
-    }
+
 	serverPoll.fd = serverSock;
 	serverPoll.events = POLLIN;
-	// serverPoll.revents = 0;
-
 	this->monitor.push_back(serverPoll);
 }
 
-
-void Server::throwError(const char* msg, int fd)
-{
-	close(fd);
-	perror(msg);
-	exit(EXIT_FAILURE);
-}
 
 /* Accepting the incoming connection from the clients */
 void Server::acceptNewConnection()
@@ -67,9 +63,7 @@ void Server::acceptNewConnection()
 	if (newsocket < 0) {
         throwError("Conenction failed", serverSock);
 	}
-	std::cout << "Client {" << newsocket - 3 << "}" << " has been Connected." << std::endl;
-	// else 
-	// 	std::cout << "Connection is established successfuly" << std::endl;
+	std::cout << "Connection is established successfuly with client N" << newsocket - 3 << std::endl;
 	
 
 	clientPoll.fd = newsocket;
@@ -81,86 +75,12 @@ void Server::acceptNewConnection()
 	this->monitor.push_back(clientPoll);
 }
 
-/* Reading msg from client */
-/* newsocket is the one of the sending part "client" */
-void Server::recieveData(int newsocket)
-{
-	char message[1024];
-	int rbyte  = recv(newsocket, message, sizeof(message) - 1, 0);
-	if (rbyte <= 0 )
-	{
-    	close(newsocket);
-		std::cout << "Client {" << newsocket - 3 << "}" << " has been Disconnected." << std::endl;
-
-	}
-	message[rbyte] = '\0';
-	std::cout << message;
-	char *parse = strtok(message, "\r\n");
-
-	while (parse != NULL)
-	{
-		std::string _parse = parse;
-
-		if (_parse.find(" ") != std::string::npos)
-		{
-			command.setCommand(_parse.substr(0, _parse.find(" ")));
-			command.setParameter(_parse.substr(_parse.find(" ") + 1));
-		}
-		else
-        {
-            command.setCommand(_parse);
-            command.setParameter("");
-        }
-		// parseCommand(newsocket)	;
-		parse = strtok(message, "\r\n");	
-	}
-}
-
-
-
-/* Sending msg to client */
-void Server::sendData(int newsocket, const char* msg)
-{
-	send(newsocket, msg, sizeof(msg), 0);
-    std::cout << "Message sent to client" << msg << std::endl;
-}
-
-
-
-void Server::closeFd()
-{
-	for(size_t i = 0; i < monitor.size(); i++)
-		close(monitor[i].fd);
-}
-
-
-
-int Server::getServerFd() const
-{
-	return this->serverSock;
-}
-
-
-
-std::vector<struct pollfd> Server::getMonitor() const
-{
-	return this->monitor;
-}
-
-
-uint16_t Server::getMonitorSize() const
-{
-	return this->monitor.size();
-}
-
 
 
 void Server::runningServer(int port, const char *av)
 {
 	this->setServerSock(port);
-	(void)av;
 	this->setServerPassWd(av);
-
 
 	while(true)
 	{
@@ -169,6 +89,7 @@ void Server::runningServer(int port, const char *av)
 
 		for(size_t i = 0; i < monitor.size(); i++)
 		{
+			
 			if (monitor[i].revents & POLLIN)
 			{
 				
@@ -179,31 +100,160 @@ void Server::runningServer(int port, const char *av)
 			}
 		}
 	}
+	std::cout << "-----CLIENTS-----" << std::endl;
+	this->printClt();
 	this->closeFd();
 }
 
-void Server::checkPasswd(int newsocket, Client client)
+
+
+/************************************************/
+/*          									*/
+/* FUCNTIONS HANDLING SENDING AND RECIEVING MSG */
+/*                          			        */
+/************************************************/
+
+
+/* Reading msg from client */
+/* newsocket is the one of the sending part "client" */
+void Server::recieveData(int newsocket)
 {
-	std::cout << this->passwd;
-	if (command.getParameter() != this->passwd)
+	char message[1024];
+	int rbyte  = recv(newsocket, message, sizeof(message) - 1, 0);
+	if (rbyte <= 0 )
 	{
-		send(newsocket, "Password ghalat", sizeof("Password ghalat"), 0);
+    	close(newsocket);
+		std::cout << "Client {" << newsocket - 3 << "}" << " has been Disconnected." << std::endl;
 		return ;
 	}
-	client.setValid(true);
+	message[rbyte] = '\0';
+	// std::string parse = strtok(message, "\r\n");
+	std::cout << message;
+	this->command.setCommandLine(message);
+	this->parseCommand(newsocket);
+
 }
+
+
 
 void Server::parseCommand(int newsocket)
 {
-	(void)newsocket;
 	Client client;
 	client = this->getClientFromVectorByFd(newsocket);
-	std::cout << "get command : " << command.getCommand() ;
-	if (command.getCommand() == "PASS")
-	{
-		// checkPasswd(newsocket, client);
+	this->command.checkPasswd(this->getPasswd(), client);
+}
 
-	}	
+// void Server::checkPasswd(int newsocket, Client client)
+// {
+// 	if (command.getParameter2() != this->passwd)
+// 	{
+// 		send(newsocket, "Password ghalat", sizeof("Password ghalat"), 0);
+// 		return ;
+// 	}
+// 	client.setValid(true);
+// }
+
+/* Sending msg to client */
+void Server::sendData(int newsocket, const char* msg)
+{
+	send(newsocket, msg, sizeof(msg), 0);
+    std::cout << "Message sent to client" << msg << std::endl;
+}
+
+
+/*********/
+/*       */
+/* UTILS */
+/*       */
+/*********/
+
+void Server::throwError(const char* msg, int fd)
+{
+	close(fd);
+	perror(msg);
+	exit(EXIT_FAILURE);
+}
+
+void Server::closeFd()
+{
+	for(size_t i = 0; i < monitor.size(); i++)
+		close(monitor[i].fd);
+}
+
+
+bool Server::running = true;
+
+void Server::signalHandler(int sig)
+{
+	(void)sig;
+    std::cout << std::endl << "Received SIGUSR1 signal!" << std::endl;
+    Server::running = false;
+}
+
+
+void Server::removeClientFromServer(int clientsock)
+{
+	std::vector<Client>::iterator it = clients.begin();
+	for (it = clients.begin(); it < clients.end(); it++)
+	{
+		const int &i = it->getClientSock();
+		if (i == clientsock)
+		{
+			close(clients[i].getClientSock());
+			clients.erase(it);
+		}
+	}
+	return;
+}
+
+void Server::removeClientFromPollfd(int clientsock)
+{
+	std::vector<struct pollfd>::iterator it = monitor.begin();
+	for (it = monitor.begin(); it < monitor.end(); it++)
+	{
+		const int &i = it->fd;
+		if (i == clientsock)
+		{
+			close(it->fd);
+			monitor.erase(it);
+		}
+	}
+	return;
+}
+
+/***********/
+/*         */
+/* SETTERS */
+/*         */
+/***********/
+
+void Server::setServerPassWd(const char* av)
+{
+	this->passwd = av;
+}
+
+
+int Server::getServerFd() const
+{
+	return this->serverSock;
+}
+
+
+/***********/
+/*         */
+/* GETTERS */
+/*         */
+/***********/
+
+std::vector<struct pollfd> Server::getMonitor() const
+{
+	return this->monitor;
+}
+
+
+uint16_t Server::getMonitorSize() const
+{
+	return this->monitor.size();
 }
 
 
@@ -219,8 +269,20 @@ Client Server::getClientFromVectorByFd(int _clientSock) const
 }
 
 
-
-void Server::setServerPassWd(const char* av)
+std::string Server::getPasswd() const
 {
-	this->passwd = av;
+	return this->passwd;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

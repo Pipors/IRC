@@ -6,7 +6,8 @@
 
 Client::Client()
 {
-
+    this->valid = false;
+    this->realName = "anas";
 }
 
 Client::~Client()

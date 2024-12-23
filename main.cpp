@@ -9,19 +9,22 @@ int main(int ac, const char **av)
         std::cerr << "Error!\nUsage : ./exe PORT PASSWD" << std::endl;
         return 0;
     }
-
-
+    
     Server server;
-    std::stringstream  s(av[1]);
     int nb;
+    std::stringstream  s(av[1]);
     s >> nb;
-    // Create socket, Bind to the port and start Listening for connections
 
-
-    server.runningServer(nb, av[2]);
-
-
-
-
+    try
+    {
+        signal(SIGINT, Server::signalHandler);
+        signal(SIGQUIT, Server::signalHandler);
+        server.runningServer(nb, av[2]);
+    }
+    catch(const std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+    std::cout << "bazinga" << std::endl;
     return 0;
 }

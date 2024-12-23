@@ -9,41 +9,53 @@ Command::~Command()
 {
 
 }
-std::string Command::getCommand() const
+
+
+std::string Command::getCommandLine() const
 {
-	return this->command;
+	return this->commandLine;
 }
 
-void Command::init(char * message)
+void Command::setCommandLine(const char* command)
 {
+	this->commandLine = command;
+	const std::string& _command = commandLine;
 
-	std::string parse = strtok(message, "\r\n");
+	if (_command.find(" ") != std::string::npos)
+		setParameters(_command.substr(0, _command.find(" ")), _command.substr(_command.find(" ") + 1));
+	else
+    	setParameters(_command, "");
+}
 
-	while (!parse.empty())
+void Command::setParameters(std::string param1, std::string param2)
+{
+	this->parameter1 = param1;
+	this->parameter2 = param2;
+}
+
+
+std::string Command::getParameter1() const
+{
+	return this->parameter1;
+}
+
+std::string Command::getParameter2() const
+{
+	return this->parameter2;
+}
+
+
+void Command::checkPasswd(std::string passwd, Client client)
+{
+	if (this->getParameter1() == "PASS")
 	{
-		command = parse.substr(0, parse.find(" "));
-		parameter = parse.substr(parse.find(" ") + 1);
-		parse = strtok(message, "\r\n");	
+		if (passwd != getParameter2().substr(0, strlen(getParameter2().c_str()) - 1))
+		{
+			close(client.getClientSock());
+			std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
+		}
+		std::cout << client.getRealName() << " has joined the server" << std::endl;
+		client.setValid(true);
 	}
-}
-
-uint16_t Command::getCommandLen(const std::string& command) const
-{
-	return (strlen(command.c_str()));
-}
-
-void Command::setCommand(std::string command)
-{
-	this->command = command;
-}
-
-std::string Command::getParameter()
-{
-	return this->parameter;
-}
-
-
-void Command::setParameter(std::string param)
-{
-	this->parameter = param;
+	return ;
 }

@@ -13,7 +13,7 @@
 #include <sstream>
 #include <unistd.h>
 
-
+#include "Client.hpp"
 
 
 class Command
@@ -22,17 +22,20 @@ public :
 	Command();
 	~Command();
 
-	std::string getCommand() const;
-	uint16_t getCommandLen(const std::string& command) const;
-	void setCommand(std::string command);
-	void setParameter(std::string param);
-	std::string getParameter(); 
+	std::string getCommandLine() const;
+	void setCommandLine(const char*  command);
+	std::string getParameter1() const; 
+	std::string getParameter2() const; 
+	void setParameters(std::string param1, std::string param2);
+	void checkPasswd(std::string passwd, Client client);
 
-	void init(char *message);
+	// void init(char *message);
+
 
 private :
-	std::string command;
-	std::string parameter;
+	std::string commandLine;
+	std::string parameter1;
+	std::string parameter2;
 	// uint16_t commandLen;
 };
 

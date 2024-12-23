@@ -25,6 +25,15 @@ public :
 	void setClientSock(int fd);
 	int getClientSock() const;
 	void setValid(bool );
+	bool isValid() const
+	{
+		return this->valid;
+	}
+	std::string getRealName() const
+	{
+		return this->realName;
+	}
+
 
 
 	

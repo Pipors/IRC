@@ -1,4 +1,23 @@
 /**
+ * @brief Sends data over a network connection.
+ *
+ * The send function is used to send data over a network connection. It takes the following parameters:
+ * @param sockfd The file descriptor of the socket to send data on.
+ * @param buffer A pointer to the buffer containing the data to be sent.
+ * @param length The length of the data to be sent, in bytes.
+ * @param flags Optional flags that modify the behavior of the send operation.
+ *
+ * @return On success, the number of bytes sent is returned. On error, -1 is returned, and errno is set appropriately.
+ *
+ * @note The send function is a blocking function, meaning it will wait until all the data has been sent before returning.
+ *       If the socket is in non-blocking mode, the send function may return immediately with a partial count of bytes sent.
+ *       It is important to handle such cases and retry sending the remaining data.
+ */
+
+ssize_t send(int sockfd, const void *buffer, size_t length, int flags);
+
+
+/**
  * @file functions_documentation.h
  * @brief Documentation for socket-related functions.
  *
@@ -218,3 +237,6 @@ void freeaddrinfo(struct addrinfo *res);
  * @return On success, the number of bytes received is returned. On error, -1 is returned.
  */
 ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+
+
+

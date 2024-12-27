@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include "Client.hpp"
 #include "Command.hpp"
+#include "Channel.hpp"
+#include <fcntl.h>
 
 
 #define BUFFER_SIZE 1024 * 1024
@@ -25,15 +27,20 @@ private	:
 	static bool running;
 	std::vector<struct pollfd> monitor;
 	std::vector<Client> clients;
+
     struct sockaddr_in serverAddr;
 	std::string passwd;
 	std::string serverName;
 	Command command;
 
-	void printClt()
+	void printClt(int newsocket)
 	{
+		
 		for(size_t i = 0; i < clients.size(); i++)
-			std::cout << clients[i].getClientSock() << std::endl;
+		{
+			if (clients[i].getClientSock() == newsocket)
+				clients[i].printInfo();
+		}
 	}
 public :
 	

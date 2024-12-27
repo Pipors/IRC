@@ -1,5 +1,5 @@
 #pragma once
-
+#include <ostream>
 
 #include <iostream>
 #include <cstring>
@@ -21,9 +21,13 @@ public :
 	void setUserName(const std::string& );
 	void setNickName(const std::string& value);
 	void setRealName(const std::string& value);
-	void setIp(const std::string& _ipAddres);
+	// void fillClientInfo();
+	void setIpAddress(const std::string& _ipAddres);
+	std::string getIpAddress() const; 
 	void setClientSock(int fd);
 	int getClientSock() const;
+	std::string getUserName() const;
+	std::string getNickName() const;
 	void setValid(bool );
 	bool isValid() const
 	{
@@ -34,7 +38,11 @@ public :
 		return this->realName;
 	}
 
-
+	void printInfo()
+	{
+		std::cout << "User Name : " << getUserName() << std::endl;
+		std::cout << "Nick Name : " << getNickName() << std::endl;
+	}
 
 	
 private :

@@ -36,7 +36,7 @@ void Client::setRealName(const std::string& value)
     this-> realName = value;
 }
 
-void Client::setIp(const std::string& _ipAddress)
+void Client::setIpAddress(const std::string& _ipAddress)
 {
     this->ipAddress = _ipAddress;
 }
@@ -49,4 +49,20 @@ int Client::getClientSock() const
 void Client::setValid(bool val)
 {
     this->valid = val;
+}
+
+
+std::string Client::getNickName() const
+{
+    return this->nickName;
+}
+
+std::string Client::getUserName() const
+{
+    return this->userName;
+}
+
+std::string Client::getIpAddress() const
+{
+    return this->ipAddress;
 }

@@ -23,6 +23,9 @@ void Server::setServerSock(int port)
 {
 	struct pollfd serverPoll;
 	int optval = 1;
+	serverAddr.sin_family = AF_INET; // for IP v4
+    serverAddr.sin_addr.s_addr = INADDR_ANY; // any address
+    serverAddr.sin_port = htons((uint16_t)port); //port to communicate from
 
 	this->serverSock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -32,10 +35,8 @@ void Server::setServerSock(int port)
 	int sockopt = setsockopt(serverSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 	if (sockopt < 0)
 		std::cout << "chi l3ayba tema " << std::endl;
-	
-	serverAddr.sin_family = AF_INET; // for IP v4
-    serverAddr.sin_addr.s_addr = INADDR_ANY; // any address
-    serverAddr.sin_port = htons((uint16_t)port); //port to communicate from
+	if (fcntl(sockopt, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+		throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
 
 	int _bind = bind(serverSock, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	if (_bind == -1)
@@ -64,12 +65,13 @@ void Server::acceptNewConnection()
         throwError("Conenction failed", serverSock);
 	}
 	std::cout << "Connection is established successfuly with client N" << newsocket - 3 << std::endl;
-	
+	send(newsocket, "Connection is established successfuly with the server\r\n", strlen("Connection is established successfuly with the server\r\n"), 0);
+
 
 	clientPoll.fd = newsocket;
 	clientPoll.events = POLLIN; 
 
-	client.setIp(inet_ntoa(sockAddrClient.sin_addr));
+	client.setIpAddress(inet_ntoa(sockAddrClient.sin_addr));
 	client.setClientSock(newsocket);
 	this->clients.push_back(client);
 	this->monitor.push_back(clientPoll);
@@ -100,8 +102,7 @@ void Server::runningServer(int port, const char *av)
 			}
 		}
 	}
-	std::cout << "-----CLIENTS-----" << std::endl;
-	this->printClt();
+	
 	this->closeFd();
 }
 
@@ -118,30 +119,42 @@ void Server::runningServer(int port, const char *av)
 /* newsocket is the one of the sending part "client" */
 void Server::recieveData(int newsocket)
 {
+	Client client;
 	char message[1024];
 	int rbyte  = recv(newsocket, message, sizeof(message) - 1, 0);
-	if (rbyte <= 0 )
+	if (rbyte < 0 )
 	{
     	close(newsocket);
 		std::cout << "Client {" << newsocket - 3 << "}" << " has been Disconnected." << std::endl;
 		return ;
 	}
 	message[rbyte] = '\0';
-	// std::string parse = strtok(message, "\r\n");
-	std::cout << message;
-	this->command.setCommandLine(message);
-	this->parseCommand(newsocket);
-
-}
-
-
-
-void Server::parseCommand(int newsocket)
-{
-	Client client;
 	client = this->getClientFromVectorByFd(newsocket);
-	this->command.checkPasswd(this->getPasswd(), client);
+
+	// if (rbyte == 0  || std::string(message).find_first_not_of(" \t\n\r") == std::string::npos){
+    // 	std::cout << "Client {" << newsocket - 3 << "} sent an empty message." << std::endl;
+    // return;
+	// }
+	// std::cout << message << std::endl;
+	this->command.setCommandLine(message);
+	std::cout << message;
+	this->command.parseHexChat(command.getCommandLine(), this->getPasswd() ,client);
+	// std::cout << "Nick name : " << client.getNickName() << std::endl;
+	
+
+
 }
+
+
+
+// void Server::parseCommand(int newsocket)
+// {
+	
+	
+	
+// 	// std::cout << client.getNickName() << std::endl;
+// 	// std::cout << client.getUserName() << std::endl;
+// }
 
 // void Server::checkPasswd(int newsocket, Client client)
 // {

@@ -17,8 +17,8 @@ int main(int ac, const char **av)
 
     try
     {
-        signal(SIGINT, Server::signalHandler);
-        signal(SIGQUIT, Server::signalHandler);
+        // signal(SIGINT, Server::signalHandler);
+        // signal(SIGQUIT, Server::signalHandler);
         server.runningServer(nb, av[2]);
     }
     catch(const std::exception &e)

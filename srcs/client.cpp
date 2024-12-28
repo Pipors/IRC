@@ -7,6 +7,7 @@
 Client::Client()
 {
     this->valid = false;
+    this->moderator = false;
     this->realName = "anas";
 }
 
@@ -65,4 +66,15 @@ std::string Client::getUserName() const
 std::string Client::getIpAddress() const
 {
     return this->ipAddress;
+}
+
+void Client::isModerator(bool val)
+{
+    this->moderator = val;
+}
+
+
+bool Client::getClientModeration() const
+{
+    return this->moderator;
 }

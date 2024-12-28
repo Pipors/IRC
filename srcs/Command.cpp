@@ -82,64 +82,104 @@ std::vector<std::string> Command::getWords(const std::string& str)
 }
 
 
-void Command::parseHexChat(const std::string &hexMsg, std::string passwd, Client client)
+//void Command::parseHexChat(const std::string &hexMsg, std::string passwd, Client client)
+//{
+//	std::vector<std::string> vec(getWords(hexMsg));
+//	
+//	std::vector<std::string>::iterator it = vec.begin();
+//	// for(it = vec.begin(); it != vec.end(); it++)
+//	// 	std::cout << *it << std::endl;
+//
+//	while (it != vec.end())
+//	{
+//		
+//		
+//		if (*it == "JOIN")
+//		{
+//			
+//		} 
+//
+//		it++;
+//	}
+//}
+
+
+void Command::sendData(int newsocket, const char* msg)
 {
-	std::vector<std::string> vec(getWords(hexMsg));
-	
-	std::vector<std::string>::iterator it = vec.begin();
-	// for(it = vec.begin(); it != vec.end(); it++)
-	// 	std::cout << *it << std::endl;
-
-	while (it != vec.end())
-	{
-		if (*it == "PASS")
-		{
-			if (*(it + 1) == passwd)
-			{
-				client.setValid(true);
-				if (sendData(client.getClientSock(), "Correct password... you can use other commands\r\n") <= 0)
-					std::cout << "SENDING ERROR OCCURED";
-				std::cout << client.getIpAddress() << "]" << " is connected\r\n";
-			}
-			else 
-			{
-				sendData(client.getClientSock(), "Wrong Password... Disconnecting\r\n");
-				close(client.getClientSock());
-				std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
-			}
-		}
-		if (*it == "NICK")
-			client.setNickName(*(it + 1));
-
-		if (*it == "USER")
-			client.setUserName(*(it + 1));
-		if (*it == "JOIN")
-		{
-			const std::string	&name = *(it + 1);
-			//const std::string& sub = (it + 1)->substr(1);
-			if (name[0] == '#')
-			{
-				Channel newChannel(name);
-				this->channels.push_back(newChannel);
-				if (newChannel.setCreation() == true)
-				{
-
-					//create channel
-				//else dont create it !
-				//add user to it !
-				}
-			}
-			else 
-				std::cout << "!!!!!!!!!!!!!!!!!" << std::endl;
-		} 
-
-		it++;
-	}
+	if (send(newsocket, msg, strlen(msg), 0) <= 0)
+		std::cerr << ERR_SEND << std::endl;
 }
 
 
-int Command::sendData(int newsocket, const char* msg)
+bool Command::channelExist(const std::string& name)
 {
-	int s = send(newsocket, msg, strlen(msg), 0);
-	return s;
+	//std::unordered_map<std::string, Client> channelMap;
+
+	//if (channelMap.find(name) != channelMap.end())                //which mean that the name "channel" exists in the map
+	//	return true;
+	size_t i = 0;
+	while (i != channels.size())
+	{
+		if (channels[i].getChannelName() == name)
+			return true;
+		i++;
+	}
+	return false;
+}
+
+
+std::vector<Channel> Command::getChannelVector() const
+{
+	return this->channels;
+}
+
+void Command::passCommand(Client client)
+{
+	std::string uName;
+	std::string rName;
+	std::string nName;
+	sendData(client.getClientSock(), "Correct password... you can use other commands\r\n");
+	std::cin >> uName;
+	client.setNickName(uName);
+	std::cin >> rName;
+	client.setRealName(rName);
+	std::cin >> nName;
+	client.setRealName(nName);
+	client.setValid(true);
+	std::cout << client.getIpAddress() << "]" << " is connected\r\n";
+}
+
+
+const char* Command::msg(std::string hostname, std::string ipaddress, std::string channelname)
+{
+	std::string rep = ":" + hostname + "@" + ipaddress + " JOIN #" + channelname + "\r\n";
+	return rep.c_str();
+}
+
+void Command::joinCommand(const std::string &param, Client client)
+{
+	const std::string& name = param.substr(1);
+	if (param[0] == '#')
+	{
+		if (channelExist(name) == false)
+		{
+			const std::string& create = "Channel " + name + " has been created.\r\n";
+			//send(client.getClientSock(), "msg\r\n", strlen("msg\r\n"), 0);
+			sendData(client.getClientSock(), this->msg(client.getUserName(), client.getIpAddress(), param.c_str()));
+			Channel newChannel(name);
+			newChannel.setCreation(true);
+			newChannel.fillChannelClients(client);
+			client.isModerator(true);
+			this->channels.push_back(newChannel);
+		}
+		else if (channelExist(name) == true)
+		{
+			const std::string& msg = client.getUserName() + " has joined the channel " + name + "\r\n";
+			sendData(client.getClientSock(), msg.c_str());
+		}
+	}
+	else
+	{
+		std::cout << "SHINRA TENSEI" << std::endl;
+	}
 }

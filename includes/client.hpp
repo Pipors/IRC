@@ -5,7 +5,7 @@
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <cstdint> 
+#include <stdint.h>
 #include <vector>
 #include <poll.h>
 #include <sstream>
@@ -29,6 +29,9 @@ public :
 	std::string getUserName() const;
 	std::string getNickName() const;
 	void setValid(bool );
+	void isModerator(bool val);
+
+	bool getClientModeration() const;
 	bool isValid() const
 	{
 		return this->valid;
@@ -47,6 +50,7 @@ public :
 	
 private :
 	int clientSock;
+	bool moderator;
 	std::string ipAddress;
 	std::string userName;
 	std::string nickName;

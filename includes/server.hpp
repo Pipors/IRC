@@ -6,8 +6,10 @@
 // #include <sys/type.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <cstdint> 
+#include <stdint.h>
 #include <vector>
+#include <cerrno>
+#include <cstdio>
 #include <poll.h>
 #include <sstream>
 #include <unistd.h>
@@ -15,7 +17,9 @@
 #include "Command.hpp"
 #include "Channel.hpp"
 #include <fcntl.h>
+#include "Channel.hpp"
 
+#define RPL_NICKCHANGE(oldnickname, nickname) (":" + oldnickname + " NICK " + nickname + CRLF)
 
 #define BUFFER_SIZE 1024 * 1024
 #define ERRNOSUCHCHANNEL()
@@ -27,6 +31,7 @@ private	:
 	static bool running;
 	std::vector<struct pollfd> monitor;
 	std::vector<Client> clients;
+	std::vector<Channel> channels;
 
     struct sockaddr_in serverAddr;
 	std::string passwd;
@@ -73,6 +78,7 @@ public :
 	std::vector<struct pollfd> getMonitor() const;
 
 
+	std::vector<std::string> getWords_(const std::string& str);
 
 	/* TEMPLATE */
 	template<typename T>

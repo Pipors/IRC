@@ -1,13 +1,14 @@
 #pragma once
-
-
+#define CRLF "\r\n"
+#
+#define ERR_SEND "FATAL : send() Failed!"
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
 // #include <sys/type.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <cstdint> 
+//#include <cstdint> 
 #include <vector>
 #include <poll.h>
 #include <sstream>
@@ -34,14 +35,19 @@ public :
 	std::vector<std::string> getWords(const std::string& str);
 	void parseHexChat(const std::string &param, std::string passwd, Client client);
 	// void init(char *message);
-	int sendData(int newsocket, const char* msg);
-
+	void sendData(int newsocket, const char* msg);
+	bool channelExist(const std::string& name);
+	std::vector<Channel> getChannelVector() const;
+	const char* msg(std::string hostname, std::string ipaddress, std::string channelname);
+	void passCommand(Client client);
+	void joinCommand(const std::string &param, Client client);
 
 private :
 	std::string commandLine;
 	std::string parameter1;
 	std::string parameter2;
 	std::vector<Channel> channels;
+	std::unordered_map<std::string, Channel> map;
 	// uint16_t commandLen;
 };
 

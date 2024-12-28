@@ -138,7 +138,46 @@ void Server::recieveData(int newsocket)
 	// std::cout << message << std::endl;
 	this->command.setCommandLine(message);
 	std::cout << message;
-	this->command.parseHexChat(command.getCommandLine(), this->getPasswd() ,client);
+	//this->command.parseHexChat(command.getCommandLine(), this->getPasswd() ,client);
+
+	std::vector<std::string> vec(getWords_(message));
+	std::vector<std::string>::iterator it = vec.begin();
+
+	while (it != vec.end())
+	{
+		if (*it == "PASS")
+		{
+			if (*(it + 1) == this->getPasswd())
+				command.passCommand(client);
+			else
+			{
+				char msg[] = "Wrong Password... Disconnecting\r\n";
+				command.sendData(client.getClientSock(), msg);
+				close(client.getClientSock());
+				std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
+			}
+		}
+		/*std::string uName;
+		std::string rName;
+		std::string nName;
+		std::cin >> uName;
+		client.setNickName(uName);
+		std::cin >> rName;
+		client.setRealName(rName);
+		std::cin >> nName;
+		client.setRealName(nName)*/;
+		if (*it == "NICK")
+			client.setNickName(*(it + 1));
+
+		if (*it == "USER")
+			client.setUserName(*(it + 1));
+		if (*it == "JOIN")
+		{
+			const std::string& param = *(it + 1);
+			command.joinCommand(param, client);
+		}
+		it++;
+	}
 	// std::cout << "Nick name : " << client.getNickName() << std::endl;
 	
 
@@ -167,12 +206,6 @@ void Server::recieveData(int newsocket)
 // }
 
 /* Sending msg to client */
-void Server::sendData(int newsocket, const char* msg)
-{
-	send(newsocket, msg, sizeof(msg), 0);
-    std::cout << "Message sent to client" << msg << std::endl;
-}
-
 
 /*********/
 /*       */
@@ -184,7 +217,7 @@ void Server::throwError(const char* msg, int fd)
 {
 	close(fd);
 	perror(msg);
-	exit(EXIT_FAILURE);
+	_exit(0);
 }
 
 void Server::closeFd()
@@ -292,6 +325,20 @@ std::string Server::getPasswd() const
 
 
 
+
+std::vector<std::string> Server::getWords_(const std::string& str)
+{
+	std::vector<std::string> words;
+	std::istringstream stream(str);
+	std::string word;
+
+	// Extract words using the stream extraction operator
+	while (stream >> word)
+	{
+		words.push_back(word);
+	}
+	return words;
+}
 
 
 

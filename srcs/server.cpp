@@ -12,6 +12,7 @@ Server::Server()
 Server::~Server()
 {
 }
+
 /***********************************/
 /*                                 */
 /* FUNCTIONS SETTING UP THE SERVER */
@@ -119,26 +120,18 @@ void Server::runningServer(int port, const char *av)
 /* newsocket is the one of the sending part "client" */
 void Server::recieveData(int newsocket)
 {
-	Client client;
+	//Client &client;
 	char message[1024];
-	int rbyte  = recv(newsocket, message, sizeof(message) - 1, 0);
-	if (rbyte < 0 )
+	int rbyte = recv(newsocket, message, sizeof(message) - 1, 0);
+	if (rbyte < 0)
 	{
-    	close(newsocket);
+		close(newsocket);
 		std::cout << "Client {" << newsocket - 3 << "}" << " has been Disconnected." << std::endl;
-		return ;
+		return;
 	}
 	message[rbyte] = '\0';
-	client = this->getClientFromVectorByFd(newsocket);
-
-	// if (rbyte == 0  || std::string(message).find_first_not_of(" \t\n\r") == std::string::npos){
-    // 	std::cout << "Client {" << newsocket - 3 << "} sent an empty message." << std::endl;
-    // return;
-	// }
-	// std::cout << message << std::endl;
-	this->command.setCommandLine(message);
+	Client &client = *this->getClientFromVectorByFd(newsocket);
 	std::cout << message;
-	//this->command.parseHexChat(command.getCommandLine(), this->getPasswd() ,client);
 
 	std::vector<std::string> vec(getWords_(message));
 	std::vector<std::string>::iterator it = vec.begin();
@@ -147,63 +140,51 @@ void Server::recieveData(int newsocket)
 	{
 		if (*it == "PASS")
 		{
-			if (*(it + 1) == this->getPasswd())
-				command.passCommand(client);
+			if (*(it + 1) != this->getPasswd())
+			{
+				command.sendData(client.getClientSock(), "Wrong Password... Disconnecting\r\n");
+			}
 			else
 			{
-				char msg[] = "Wrong Password... Disconnecting\r\n";
-				command.sendData(client.getClientSock(), msg);
-				close(client.getClientSock());
-				std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
+				//client.setValid(true);
+				//for (size_t i = 0; i < clients.size(); i++)
+				//{
+					//if (clients[i].getClientSock() == newsocket)
+				client.setValid(true);
+				//}
+				command.passCommand(client);
+				
+				//char msg[] =;
+				//close(client.getClientSock());
+				//std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
 			}
 		}
-		/*std::string uName;
-		std::string rName;
-		std::string nName;
-		std::cin >> uName;
-		client.setNickName(uName);
-		std::cin >> rName;
-		client.setRealName(rName);
-		std::cin >> nName;
-		client.setRealName(nName)*/;
-		if (*it == "NICK")
-			client.setNickName(*(it + 1));
-
-		if (*it == "USER")
-			client.setUserName(*(it + 1));
-		if (*it == "JOIN")
+		if (*it == "NICK" && client.isValid() == true)
+		{
+			for (size_t i = 0; i < clients.size(); i++)
+			{
+				if (clients[i].getClientSock() == newsocket)
+					clients[i].setNickName(*(it + 1));
+			}
+		}
+		if (*it == "USER" && client.isValid() == true)
+		{
+			for (size_t i = 0; i < clients.size(); i++)
+			{
+				if (clients[i].getClientSock() == newsocket)
+					clients[i].setUserName(*(it + 1));
+			}
+		}
+		if (*it == "JOIN" && client.isEmptyName() == false)
 		{
 			const std::string& param = *(it + 1);
 			command.joinCommand(param, client);
 		}
+		if (*it == "QUIT" && *(it + 1) == ":Leaving")
+			close(client.getClientSock());
 		it++;
 	}
-	// std::cout << "Nick name : " << client.getNickName() << std::endl;
-	
-
-
 }
-
-
-
-// void Server::parseCommand(int newsocket)
-// {
-	
-	
-	
-// 	// std::cout << client.getNickName() << std::endl;
-// 	// std::cout << client.getUserName() << std::endl;
-// }
-
-// void Server::checkPasswd(int newsocket, Client client)
-// {
-// 	if (command.getParameter2() != this->passwd)
-// 	{
-// 		send(newsocket, "Password ghalat", sizeof("Password ghalat"), 0);
-// 		return ;
-// 	}
-// 	client.setValid(true);
-// }
 
 /* Sending msg to client */
 
@@ -304,14 +285,18 @@ uint16_t Server::getMonitorSize() const
 
 
 
-Client Server::getClientFromVectorByFd(int _clientSock) const
+Client* Server::getClientFromVectorByFd(int _clientSock)
 {
-	for(size_t i = 0; i < this->clients.size(); i++)
+	Client* p = NULL;
+	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); it++)
 	{
-		if(clients[i].getClientSock() == _clientSock)
-			return clients[i];
+		if (it->getClientSock() == _clientSock)
+		{
+			p = &(*it);
+			return p;
+		}
 	}
-	return Client();
+	return NULL;
 }
 
 
@@ -321,12 +306,7 @@ std::string Server::getPasswd() const
 }
 
 
-
-
-
-
-
-std::vector<std::string> Server::getWords_(const std::string& str)
+std::vector<std::string> Server::getWords_( std::string str)
 {
 	std::vector<std::string> words;
 	std::istringstream stream(str);

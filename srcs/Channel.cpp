@@ -30,11 +30,6 @@ Channel Channel::createChannel(std::string name)
 	(void) name;
 	return *this;
 }
-std::vector<Client>	Channel::AddUser2Channel(Client User){
-	channelClients.push_back(User);
-
-	return channelClients;
-}
 
 void Channel::setCreation(bool val)
 {
@@ -48,7 +43,7 @@ bool Channel::getCreation() const
 	return this->isCreated;
 }
 
-void Channel::fillChannelClients(const Client& client)
+void Channel::AddUser2Channel(const Client& client)
 {
 	this->channelClients.push_back(client);
 }

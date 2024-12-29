@@ -74,11 +74,11 @@ public :
 	int getServerFd() const;
 	std::string getPasswd() const;
 	uint16_t getMonitorSize() const;
-	Client getClientFromVectorByFd(int _clientSock) const;
+	Client *getClientFromVectorByFd(int _clientSock);
 	std::vector<struct pollfd> getMonitor() const;
 
 
-	std::vector<std::string> getWords_(const std::string& str);
+	std::vector<std::string> getWords_( std::string str);
 
 	/* TEMPLATE */
 	template<typename T>

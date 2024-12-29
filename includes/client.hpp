@@ -15,6 +15,7 @@ class Client
 {
 public :
 	Client();
+	Client(const std::string &_userName, const std::string &_nickName);
 	~Client();
 	void createSocketClient();
 	int connectionAttempting();
@@ -30,6 +31,7 @@ public :
 	std::string getNickName() const;
 	void setValid(bool );
 	void isModerator(bool val);
+	bool isEmptyName() const;
 
 	bool getClientModeration() const;
 	bool isValid() const
@@ -50,10 +52,10 @@ public :
 	
 private :
 	int clientSock;
-	bool moderator;
-	std::string ipAddress;
 	std::string userName;
 	std::string nickName;
+	std::string ipAddress;
 	std::string realName;
 	bool valid;
+	bool moderator;
 };

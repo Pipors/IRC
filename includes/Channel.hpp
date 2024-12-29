@@ -14,10 +14,9 @@ public :
 	Channel();
 	Channel(const std::string& _channelName);
 	~Channel();
-	std::vector<Client>	AddUser2Channel(Client User);
+	void AddUser2Channel(const Client& User);
 	void setCreation(bool val);
 	bool getCreation() const;
-	void fillChannelClients(const Client& client);
 	std::string getChannelName() const;
 
 	Channel createChannel(std::string name);

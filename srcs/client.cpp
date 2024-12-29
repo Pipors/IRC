@@ -8,7 +8,14 @@ Client::Client()
 {
     this->valid = false;
     this->moderator = false;
-    this->realName = "anas";
+    this->realName = "";
+    this->nickName = "";
+    this->userName = "";
+}
+
+Client::Client(const std::string& _userName, const std::string& _nickName) : userName(_userName), nickName(_nickName), valid(false), moderator(false)
+{
+
 }
 
 Client::~Client()
@@ -77,4 +84,11 @@ void Client::isModerator(bool val)
 bool Client::getClientModeration() const
 {
     return this->moderator;
+}
+
+bool Client::isEmptyName() const
+{
+    if (this->getNickName().empty() || this->getUserName().empty())
+        return true;
+    return false;
 }

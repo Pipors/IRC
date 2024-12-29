@@ -1,7 +1,7 @@
 #pragma once
 #define CRLF "\r\n"
 #
-#define ERR_SEND "FATAL : send() Failed!"
+#define ERR_FUNCSEND "FATAL : send() Failed!"
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
@@ -41,13 +41,13 @@ public :
 	const char* msg(std::string hostname, std::string ipaddress, std::string channelname);
 	void passCommand(Client client);
 	void joinCommand(const std::string &param, Client client);
+	bool isEmptyName(Client client);
 
 private :
 	std::string commandLine;
 	std::string parameter1;
 	std::string parameter2;
 	std::vector<Channel> channels;
-	std::unordered_map<std::string, Channel> map;
 	// uint16_t commandLen;
 };
 

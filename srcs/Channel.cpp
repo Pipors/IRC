@@ -22,7 +22,6 @@ Channel::Channel(const std::string& _channelName) : channelName(_channelName), i
 
 Channel::~Channel()
 {
-	std::cout << "all channels are removed" << std::endl;
 }
 
 Channel Channel::createChannel(std::string name)

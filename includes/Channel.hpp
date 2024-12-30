@@ -21,6 +21,32 @@ public :
 
 	Channel createChannel(std::string name);
 
+	std::vector<Client> *getChannelClients()
+	{
+		return &(channelClients);
+	}
+
+	void sendMsg2All(int sender, std::string msg)
+	{
+		size_t i = 0;
+		while (i != channelClients.size())
+		{
+			if (sender == channelClients[i].getClientSock())
+				i++;
+			send(channelClients[i].getClientSock(), msg.c_str(), msg.size(), 0);
+			i++;
+		}
+	}
+	void printname()
+	{
+		size_t i = 0;
+		while (i != channelClients.size())
+		{
+			std::cout << channelClients[i].getNickName() << std::endl;;
+			i++;
+		}
+	}
+
 
 private :
 	std::string channelName;

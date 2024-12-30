@@ -35,14 +35,21 @@ public :
 	std::vector<std::string> getWords(const std::string& str);
 	void parseHexChat(const std::string &param, std::string passwd, Client client);
 	// void init(char *message);
-	void sendData(int newsocket, const char* msg);
+	void sendData(int newsocket, const std::string& msg);
 	bool channelExist(const std::string& name);
 	std::vector<Channel> getChannelVector() const;
 	const char* msg(std::string hostname, std::string ipaddress, std::string channelname);
-	void passCommand(Client client);
-	void joinCommand(const std::string &param, Client client);
-	bool isEmptyName(Client client);
-
+	void passCommand(Client *client);
+	void joinCommand(const std::string &param, Client *client);
+	Channel *getChannelByName(const std::string& name)
+	{
+		for (size_t i = 0; i != channels.size(); i++)
+		{
+			if (channels[i].getChannelName() == name)
+				return &(channels[i]);
+		}
+		return NULL;
+	}
 private :
 	std::string commandLine;
 	std::string parameter1;

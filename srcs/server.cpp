@@ -117,24 +117,30 @@ void Server::runningServer(int port, const char *av)
 
 
 /* Reading msg from client */
-/* newsocket is the one of the sending part "client" */
-void Server::recieveData(int newsocket)
+void Server::recieveData(int clientSock)
 {
 	//Client &client;
 	char message[1024];
-	int rbyte = recv(newsocket, message, sizeof(message) - 1, 0);
+	int rbyte = recv(clienSock, message, sizeof(message) - 1, 0);
 	if (rbyte < 0)
 	{
-		close(newsocket);
-		std::cout << "Client {" << newsocket - 3 << "}" << " has been Disconnected." << std::endl;
+		close(clienSock);
+		std::cout << "Client {" << clienSock - 3 << "}" << " has been Disconnected." << std::endl;
 		return;
 	}
 	message[rbyte] = '\0';
-	Client &client = *this->getClientFromVectorByFd(newsocket);
+	// this c
+	Client *client = this->getClientFromVectorByFd(clienSock);
 	std::cout << message;
-
 	std::vector<std::string> vec(getWords_(message));
 	std::vector<std::string>::iterator it = vec.begin();
+
+	const std::stringstream str(message);
+	std::string word;
+	while (str >> word)
+	{
+
+	}
 
 	while (it != vec.end())
 	{
@@ -142,49 +148,59 @@ void Server::recieveData(int newsocket)
 		{
 			if (*(it + 1) != this->getPasswd())
 			{
-				command.sendData(client.getClientSock(), "Wrong Password... Disconnecting\r\n");
+				command.sendData(client->getClientSock(), "Wrong Password... Disconnecting\r\n");
 			}
 			else
 			{
-				//client.setValid(true);
-				//for (size_t i = 0; i < clients.size(); i++)
-				//{
-					//if (clients[i].getClientSock() == newsocket)
-				client.setValid(true);
-				//}
+				client->setValid(true);
 				command.passCommand(client);
-				
-				//char msg[] =;
-				//close(client.getClientSock());
-				//std::cout << "Client {" << client.getClientSock() - 3 << "}" << " has been Disconnected." << std::endl;
 			}
 		}
-		if (*it == "NICK" && client.isValid() == true)
+		if (*it == "NICK" && client->isValid() == true)
 		{
-			for (size_t i = 0; i < clients.size(); i++)
-			{
-				if (clients[i].getClientSock() == newsocket)
-					clients[i].setNickName(*(it + 1));
-			}
+			client->setNickName(*(it + 1));
 		}
-		if (*it == "USER" && client.isValid() == true)
+		if (*it == "USER" && client->isValid() == true)
 		{
-			for (size_t i = 0; i < clients.size(); i++)
-			{
-				if (clients[i].getClientSock() == newsocket)
-					clients[i].setUserName(*(it + 1));
-			}
+			client->setUserName(*(it + 1));
 		}
-		if (*it == "JOIN" && client.isEmptyName() == false)
+		if (*it == "JOIN" && client->isEmptyName() == false)
 		{
 			const std::string& param = *(it + 1);
 			command.joinCommand(param, client);
 		}
-		if (*it == "QUIT" && *(it + 1) == ":Leaving")
-			close(client.getClientSock());
+
+		if (*it == "PRIVMSG")
+		{
+			const std::string& param = *(it + 1);
+			std::cout << message << std::endl;
+			if (param[0] == '#')
+			{
+				//Point to the channel in where the message were sent
+				Channel *channel = command.getChannelByName(param);
+				if (channel != NULL)
+				{
+					const std::string& str = getRangeAsString(vec, 2, vec.size());
+					const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + param + " " + getwords__(message, *(it + 2)) + "\r\n";
+					//Point to the channelClient vector in Channel
+					std::vector<Client>* otherClients = channel->getChannelClients();
+					for (size_t i = 0; i < otherClients->size(); i++)
+					{
+						std::cout << (*otherClients)[i].getNickName() << std::endl;
+						int fd = (*otherClients)[i].getClientSock();
+						if (fd == clientSock)
+							i++;
+						send(fd, msg.c_str(), msg.size(), 0);
+					}
+				}
+			}
+		}
+		if (*it == "QUIT" && *(it + 1) == " :Leaving")
+			close(client->getClientSock());
 		it++;
 	}
 }
+
 
 /* Sending msg to client */
 

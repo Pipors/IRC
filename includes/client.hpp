@@ -26,7 +26,7 @@ public :
 	void setIpAddress(const std::string& _ipAddres);
 	std::string getIpAddress() const; 
 	void setClientSock(int fd);
-	int getClientSock() const;
+	int getClientSock();
 	std::string getUserName() const;
 	std::string getNickName() const;
 	void setValid(bool );

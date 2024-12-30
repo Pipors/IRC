@@ -49,7 +49,7 @@ void Client::setIpAddress(const std::string& _ipAddress)
     this->ipAddress = _ipAddress;
 }
 
-int Client::getClientSock() const
+int Client::getClientSock()
 {
     return this->clientSock;
 }

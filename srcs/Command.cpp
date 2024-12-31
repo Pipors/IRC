@@ -111,24 +111,21 @@ void Command::joinCommand(const std::string &param, Client *client)
 		{
 			Channel newChannel(param);
 			newChannel.setCreation(true);
-			const std::string& create = "Channel " + param + " has been created.\r\n";
-			const std::string& msg = create + ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + "\r\n";
-			// The msg appears in the server interface on hexchat not the channel
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			newChannel.AddUser2Channel(*client);
+			newChannel.AddUser2Channel(client);
 			client->isModerator(true);
 			this->channels.push_back(newChannel);
+
+			const std::string& create = "Channel " + param + " has been created.\r\n";
+			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + create + "\r\n";
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);  // The msg appears in the server interface on hexchat not the channel
 		}
 		else if (channelExist(param) == true)
 		{
+			getChannelByName(param)->AddUser2Channel(client);
 			const std::string& welcome = client->getUserName() + " has joined the channel " + param + "\r\n";
-			const std::string& msg = welcome + ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + "\r\n";
+			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + welcome + "Here is the list of users in the channel " + param + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
 			sendData(client->getClientSock(), msg.c_str());
-			for (size_t i = 0; i < channels.size(); i++)
-			{
-				if (channels[i].getChannelName() == param)
-					channels[i].AddUser2Channel(*client);
-			}
+			//const std::string &users =
 		}
 	}
 	else

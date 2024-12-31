@@ -121,27 +121,23 @@ void Server::recieveData(int clientSock)
 {
 	//Client &client;
 	char message[1024];
-	int rbyte = recv(clienSock, message, sizeof(message) - 1, 0);
+	int rbyte = recv(clientSock, message, sizeof(message) - 1, 0);
 	if (rbyte < 0)
 	{
-		close(clienSock);
-		std::cout << "Client {" << clienSock - 3 << "}" << " has been Disconnected." << std::endl;
+		close(clientSock);
+		std::cout << "Client {" << clientSock - 3 << "}" << " has been Disconnected." << std::endl;
 		return;
 	}
 	message[rbyte] = '\0';
-	// this c
-	Client *client = this->getClientFromVectorByFd(clienSock);
-	std::cout << message;
-	std::vector<std::string> vec(getWords_(message));
+
+	// Pointing to the client who sent the message in the vector
+
+	Client *client = this->getClientFromVectorByFd(clientSock);
+	const std::string& msg = message;
+	std::vector<std::string> vec(getWords_(msg));
 	std::vector<std::string>::iterator it = vec.begin();
 
-	const std::stringstream str(message);
-	std::string word;
-	while (str >> word)
-	{
-
-	}
-
+	std::cout << message;
 	while (it != vec.end())
 	{
 		if (*it == "PASS")
@@ -180,22 +176,22 @@ void Server::recieveData(int clientSock)
 				Channel *channel = command.getChannelByName(param);
 				if (channel != NULL)
 				{
-					const std::string& str = getRangeAsString(vec, 2, vec.size());
-					const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + param + " " + getwords__(message, *(it + 2)) + "\r\n";
+					//const std::string& str = getRangeAsString(vec, 2, vec.size(), " ");
+					const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + param + " " + getRangeAsString(vec, 2, vec.size(), " ") + "\r\n";
 					//Point to the channelClient vector in Channel
-					std::vector<Client>* otherClients = channel->getChannelClients();
-					for (size_t i = 0; i < otherClients->size(); i++)
+					std::vector<Client>* otherClients = channel->getChannelClientsVector();
+					size_t i = 0;
+					while (i < otherClients->size())
 					{
-						std::cout << (*otherClients)[i].getNickName() << std::endl;
 						int fd = (*otherClients)[i].getClientSock();
-						if (fd == clientSock)
-							i++;
-						send(fd, msg.c_str(), msg.size(), 0);
+						if (client->getClientSock() != (*otherClients)[i].getClientSock())
+							send(fd, msg.c_str(), msg.size(), 0);
+						i++;
 					}
 				}
 			}
 		}
-		if (*it == "QUIT" && *(it + 1) == " :Leaving")
+		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 			close(client->getClientSock());
 		it++;
 	}
@@ -322,7 +318,7 @@ std::string Server::getPasswd() const
 }
 
 
-std::vector<std::string> Server::getWords_( std::string str)
+std::vector<std::string> Server::getWords_(const std::string &str)
 {
 	std::vector<std::string> words;
 	std::istringstream stream(str);

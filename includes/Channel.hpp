@@ -14,14 +14,14 @@ public :
 	Channel();
 	Channel(const std::string& _channelName);
 	~Channel();
-	void AddUser2Channel(const Client& User);
+	void AddUser2Channel(Client* User);
 	void setCreation(bool val);
 	bool getCreation() const;
 	std::string getChannelName() const;
 
 	Channel createChannel(std::string name);
 
-	std::vector<Client> *getChannelClients()
+	std::vector<Client> *getChannelClientsVector()
 	{
 		return &(channelClients);
 	}
@@ -36,6 +36,20 @@ public :
 			send(channelClients[i].getClientSock(), msg.c_str(), msg.size(), 0);
 			i++;
 		}
+	}
+
+	std::string getChannelClientByName()
+	{
+		std::string names;
+		size_t i = 0;
+		while (i < channelClients.size())
+		{
+			names += channelClients[i].getNickName();
+			i++;
+			if (i < channelClients.size())
+				names += "\n";
+		}
+		return names;
 	}
 	void printname()
 	{

@@ -42,9 +42,9 @@ bool Channel::getCreation() const
 	return this->isCreated;
 }
 
-void Channel::AddUser2Channel(const Client& client)
+void Channel::AddUser2Channel(Client* client)
 {
-	this->channelClients.push_back(client);
+	this->channelClients.push_back(*client);
 }
 
 

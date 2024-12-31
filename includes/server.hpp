@@ -101,7 +101,7 @@ public :
 		return ();
 	}*/
 
-	std::string getWords_(std::string str);
+	std::vector<std::string> getWords_(const std::string &str);
 
 	/* TEMPLATE */
 	/*template<class T>
@@ -124,7 +124,7 @@ public :
 		return { vec.begin() + start, vec.begin() + end };
 	}
 
-	std::string getRangeAsString(const std::vector<std::string>& vec, size_t start, size_t end) {
+	std::string getRangeAsString(const std::vector<std::string>& vec, size_t start, size_t end, std::string delimiter) {
 		if (start > vec.size() || end > vec.size() || start > end) {
 			throw std::out_of_range("Invalid range specified.");
 		}
@@ -133,7 +133,7 @@ public :
 		std::string result;
 		for (auto it = vec.begin() + start; it != vec.begin() + end; ++it) {
 			if (!result.empty()) {
-				result += " "; // Add a space between words
+				result += delimiter; // Add a space between words
 			}
 			result += *it;
 		}

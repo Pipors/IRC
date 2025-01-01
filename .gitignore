@@ -2,5 +2,5 @@ Comment
 .vs/
 build/
 .DS_Store/
-.vscode/
+.vscode
 .gitignore

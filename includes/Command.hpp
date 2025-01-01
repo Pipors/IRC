@@ -17,7 +17,7 @@
 
 #include "Channel.hpp"
 #include "Client.hpp"
-
+#include "Replies.hpp"
 
 
 class Command

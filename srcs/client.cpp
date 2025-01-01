@@ -4,7 +4,7 @@
 #define BUFFER_SIZE 1024
 
 
-Client::Client()
+Client::Client() : userName("Guest"), nickName("Guest"), valid(false), moderator(false)
 {
     this->valid = false;
     this->moderator = false;

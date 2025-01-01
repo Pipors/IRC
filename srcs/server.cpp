@@ -65,8 +65,7 @@ void Server::acceptNewConnection()
 	if (newsocket < 0) {
         throwError("Conenction failed", serverSock);
 	}
-	std::cout << "Connection is established successfuly with client N" << newsocket - 3 << std::endl;
-	send(newsocket, "Connection is established successfuly with the server\r\n", strlen("Connection is established successfuly with the server\r\n"), 0);
+	std::cout << "Connection is established successfuly with client N˚" << newsocket - 3 << std::endl;
 
 
 	clientPoll.fd = newsocket;
@@ -169,7 +168,6 @@ void Server::recieveData(int clientSock)
 		if (*it == "PRIVMSG")
 		{
 			const std::string& param = *(it + 1);
-			std::cout << message << std::endl;
 			if (param[0] == '#')
 			{
 				//Point to the channel in where the message were sent
@@ -333,8 +331,22 @@ std::vector<std::string> Server::getWords_(const std::string &str)
 }
 
 
+std::string Server::getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter) 
+	{
+		if (start > vec.size() || end > vec.size() || start > end) 
+			throw std::out_of_range("Invalid range specified.");
 
-
+		// Extract range and concatenate strings
+		std::string result;
+		std::vector<std::string>::iterator it = vec.begin();
+		for (it = vec.begin() + start; it != vec.begin() + end; it++) 
+		{
+			if (!result.empty()) 
+				result += delimiter; // Add a space between words
+			result += *it;
+		}
+		return result;
+	}
 
 
 

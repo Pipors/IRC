@@ -46,4 +46,4 @@
 #define RPL_ENDOFWHO(client, mask) 														("315 " + client + " " + mask + " :End of WHO list.\r\n")
 #define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	("352 " + client + " " + channel + " " + username + " " + host + " " + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
 #define RPL_CHANNELMODEIS(client, channel, modes)										("324 " + client + " " + channel + " " + modes + "\r\n")
-#define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + to_string(creation_time) + "\r\n")
+#define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + creation_time + "\r\n")

@@ -14,59 +14,28 @@ public :
 	Channel();
 	Channel(const std::string& _channelName);
 	~Channel();
+
+	bool getCreation() const;
+	bool getPasswd();
+
 	void AddUser2Channel(Client* User);
 	void setCreation(bool val);
-	bool getCreation() const;
+	void setPasswd(bool &);
+
 	std::string getChannelName() const;
+	std::string getChannelClientByName();
+	std::string getCurrentTimestamp();
+
+	std::vector<Client> *getChannelClientsVector();
 
 	Channel createChannel(std::string name);
 
-	std::vector<Client> *getChannelClientsVector()
-	{
-		return &(channelClients);
-	}
-
-	void sendMsg2All(int sender, std::string msg)
-	{
-		size_t i = 0;
-		while (i != channelClients.size())
-		{
-			if (sender == channelClients[i].getClientSock())
-				i++;
-			send(channelClients[i].getClientSock(), msg.c_str(), msg.size(), 0);
-			i++;
-		}
-	}
-
-	std::string getChannelClientByName()
-	{
-		std::string names;
-		size_t i = 0;
-		while (i < channelClients.size())
-		{
-			names += channelClients[i].getNickName();
-			i++;
-			if (i < channelClients.size())
-				names += "\n";
-		}
-		return names;
-	}
-	void printname()
-	{
-		size_t i = 0;
-		while (i != channelClients.size())
-		{
-			std::cout << channelClients[i].getNickName() << std::endl;;
-			i++;
-		}
-	}
-
 
 private :
-	std::string channelName;
 	bool isCreated;
-	std::vector<Client> channelClients;
 	bool hasPasswd;
+	std::string channelName;
 	std::string channelPasswd;
+	std::vector<Client> channelClients;
 };
 

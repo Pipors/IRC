@@ -115,7 +115,7 @@ void Command::joinCommand(const std::string &param, Client *client)
 			client->isModerator(true);
 			this->channels.push_back(newChannel);
 
-			const std::string& create = "Channel " + param + " has been created.\r\n";
+			const std::string& create = RPL_CREATIONTIME(client->getNickName(), newChannel.getChannelName(), newChannel.getCurrentTimestamp());
 			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + create + "\r\n";
 			send(client->getClientSock(), msg.c_str(), msg.size(), 0);  // The msg appears in the server interface on hexchat not the channel
 		}
@@ -123,7 +123,7 @@ void Command::joinCommand(const std::string &param, Client *client)
 		{
 			getChannelByName(param)->AddUser2Channel(client);
 			const std::string& welcome = client->getUserName() + " has joined the channel " + param + "\r\n";
-			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + welcome + "Here is the list of users in the channel " + param + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
+			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + welcome + "Here is the list of users in the channel " + param.substr(1) + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
 			sendData(client->getClientSock(), msg.c_str());
 			//const std::string &users =
 		}
@@ -133,3 +133,5 @@ void Command::joinCommand(const std::string &param, Client *client)
 		std::cout << "SHINRA TENSEI" << std::endl;
 	}
 }
+
+

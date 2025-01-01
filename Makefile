@@ -1,6 +1,6 @@
 CXX = @c++
 
-CXXFLAGS = -Wall -Wextra -Werror -fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -fsanitize=address -std=c++98
 LDFLAGS = -fsanitize=address
 
 SRCS = main.cpp srcs/Client.cpp srcs/Server.cpp srcs/Command.cpp  srcs/Channel.cpp

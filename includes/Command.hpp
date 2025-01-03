@@ -26,7 +26,7 @@ public :
 	Command();
 	~Command();
 
-	const char* standardMsg(std::string hostname, std::string ipaddress, std::string channelname);
+	std::string standardMsg(std::string hostname, std::string ipaddress, std::string channelname);
 	
 	bool channelExist(const std::string& name);
 	
@@ -37,11 +37,12 @@ public :
 	// void init(char *message);
 	void joinCommand(const std::string &param, Client *client);
 	void parseHexChat(const std::string &param, std::string passwd, Client client);
-	void passCommand(Client *client);
+	void passCommand(Client *client, const std::string& param, const std::string &passwd);
 	void sendData(int newsocket, const std::string& msg);
 	void setCommandLine(char*  command);
 	void setParameters(std::string param1, std::string param2);
-	
+	void privmsgCommandChannel(const std::string &param, Client *client, const std::string& tosend);
+	void privmsgCommandUser(Client *client, const std::string& tosend);
 	std::vector<std::string> getWords(const std::string& str);
 	std::vector<Channel> getChannelVector() const;
 	

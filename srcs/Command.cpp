@@ -85,22 +85,28 @@ std::vector<Channel> Command::getChannelVector() const
 
 
 
-void Command::passCommand(Client *client)
+void Command::passCommand(Client *client, const std::string& param, const std::string &passwd)
 {
-	if (!client->isEmptyName(client->getNickName(), client->getUserName()))
+	if (param != passwd)
+		sendData(client->getClientSock(), "Wrong Password... Try again\r\nUsage: /PASS \"passwd\"\r\n");
+	else
 	{
-		const std::string& msg = "Welcome " + client->getNickName() + " among us\r\n";
-		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		client->setValid(true);
+		if (!client->isEmptyName(client->getNickName(), client->getUserName()))
+		{
+			const std::string& msg = "Welcome " + client->getNickName() + " among us\r\n";
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		}
+		sendData(client->getClientSock(), "Correct password... Set the username, nickcname and realname\r\n");
+		std::cout << client->getIpAddress() << "=> " << client->getNickName() << " is connected\r\n";
 	}
-	sendData(client->getClientSock(), "Correct password... Set the username, nickcname and realname\r\n");
-	std::cout << client->getIpAddress() << " is connected\r\n";
 }
 
 
-const char* Command::standardMsg(std::string hostname, std::string ipaddress, std::string channelname)
+std::string Command::standardMsg(std::string nick, std::string user, std::string ipaddress)
 {
-	std::string rep = ":" + hostname + " @" + ipaddress + " JOIN #" + channelname;
-	return rep.c_str();
+	std::string rep = ":" + nick + "!" + user + " @" + ipaddress;
+	return rep;
 }
 
 void Command::joinCommand(const std::string &param, Client *client)
@@ -126,11 +132,11 @@ void Command::joinCommand(const std::string &param, Client *client)
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 				return;
 			}
-			else if (getChannelByName(param)->userExist(client->getNickName()) || 
-					 getChannelByName(param)->userExist(client->getUserName()) ||
-					 getChannelByName(param)->userExist(client->getIpAddress()))
+			else if (getChannelByName(param)->userExist(client->getNickName(), client->getClientSock()) || 
+					 getChannelByName(param)->userExist(client->getUserName(), client->getClientSock()) ||
+					 getChannelByName(param)->userExist(client->getIpAddress(), client->getClientSock()))
 			{
-				const std::string& msg = ":IRC" + ERR_NICKNAMEINUSE(client->getNickName(), client->getNickName());
+				const std::string& msg = ":IRC " + ERR_NICKNAMEINUSE(client->getNickName(), client->getNickName());
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 				return ;
 
@@ -159,11 +165,53 @@ void Command::joinCommand(const std::string &param, Client *client)
 
 
 Channel *Command::getChannelByName(const std::string& name)
+{
+	for (size_t i = 0; i != channels.size(); i++)
 	{
-		for (size_t i = 0; i != channels.size(); i++)
-		{
-			if (channels[i].getChannelName() == name)
-				return &(channels[i]);
-		}
-		return NULL;
+		if (channels[i].getChannelName() == name)
+			return &(channels[i]);
 	}
+	return NULL;
+}
+
+// The msg send in the channel
+// forward the message to all clients added to this channel
+void Command::privmsgCommandChannel(const std::string &param, Client *client, const std::string& tosend)
+{
+	if (param[0] == '#')
+	{
+		//Point to the channel in where the message were sent
+		Channel *channel = getChannelByName(param);
+		if (channel == NULL)
+			return ;
+		const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + param + tosend + "\r\n";
+		//Point to the channelClient vector in Channel
+		std::vector<Client>* otherClients = channel->getChannelClientsVector();
+		size_t i = 0;
+		while (i < otherClients->size())
+		{
+			int fd = (*otherClients)[i].getClientSock();
+			if (client->getClientSock() != fd)
+				send(fd, msg.c_str(), msg.size(), 0);
+			i++;
+		}		
+	}
+}
+// The message is send to a user
+// look for the user by his nickname and send the msg to him
+void Command::privmsgCommandUser(Client *client, const std::string& tosend)
+{
+	if (!client)
+	{
+		const std::string& msg = ":IRC" + ERR_NOSUCHNICK(client->getNickName(), client->getNickName());
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return ;
+	}
+	else 
+	{
+		const std::string& msg =  standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " PRIVMSG " + client->getNickName() + tosend + "\r\n";
+		sendData(client->getClientSock(),  msg.c_str());
+		return ;
+	}
+}
+

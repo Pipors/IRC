@@ -25,7 +25,7 @@ public :
 	void setChannelLimit(const int& i);
 
 	bool channelIsFull();
-	bool userExist(const std::string &name);
+	bool userExist(const std::string &name, int nb);
 	bool getInviteMode();
 	bool channelInviteModeOnly(const std::string &name);
 

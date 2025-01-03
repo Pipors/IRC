@@ -56,6 +56,7 @@ public :
 	void removeClientFromServer(int clientsock);
 	void removeClientFromPollfd(int clientsock);
 	void closeFd();
+
 	
 	/* SETTERS */
 	void setServerPassWd(const char* av);
@@ -66,8 +67,10 @@ public :
 	std::string getName() const;
 	uint16_t getMonitorSize() const;
 	Client *getClientFromVectorByFd(int _clientSock);
+	Client *getClientFromServer(const std::string& nickname);
 	std::vector<struct pollfd> getMonitor() const;
 	std::vector<std::string> getWords_(const std::string &str);
+	Client *getServerClient(const std::string &str);
 	std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter);
 
 	Server();

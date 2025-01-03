@@ -91,7 +91,6 @@ void Server::runningServer(int port, const char *av)
 
 		for(size_t i = 0; i < monitor.size(); i++)
 		{
-			
 			if (monitor[i].revents & POLLIN)
 			{
 				
@@ -140,19 +139,11 @@ void Server::recieveData(int clientSock)
 	while (it != vec.end())
 	{
 		if (*it == "PASS")
-		{
-			if (*(it + 1) != this->getPasswd())
-			{
-				command.sendData(client->getClientSock(), "Wrong Password... Disconnecting\r\n");
-			}
-			else
-			{
-				client->setValid(true);
-				command.passCommand(client);
-			}
-		}
+			command.passCommand(client, *(it + 1), getPasswd());
+
 		if (*it == "NICK" && client->isValid() == true)
-		{if (client->isEmptyName(client->getNickName(), client->getUserName()) == false)
+		{
+			if (client->isEmptyName(client->getNickName(), client->getUserName()) == false)
 			{
 				const std::string &msg = "Your nick name have been changed.";
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
@@ -163,7 +154,7 @@ void Server::recieveData(int clientSock)
 		{
 			if (client->isEmptyName(client->getNickName(), client->getUserName()) == false)
 			{
-				const std::string &msg = "Your nick name have been changed.";
+				const std::string &msg = "Your nick name have been changed.\r\n";
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 			}
 			client->setUserName(*(it + 1));
@@ -173,33 +164,20 @@ void Server::recieveData(int clientSock)
 			const std::string& param = *(it + 1);
 			command.joinCommand(param, client);
 		}
-
 		if (*it == "PRIVMSG")
 		{
 			const std::string& param = *(it + 1);
 			if (param[0] == '#')
+				command.privmsgCommandChannel(param, client, getRangeAsString(vec, 3, vec.size(), " "));
+			else
 			{
-				//Point to the channel in where the message were sent
-				Channel *channel = command.getChannelByName(param);
-				if (channel != NULL)
-				{
-					//const std::string& str = getRangeAsString(vec, 2, vec.size(), " ");
-					const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + param + " " + getRangeAsString(vec, 2, vec.size(), " ") + "\r\n";
-					//Point to the channelClient vector in Channel
-					std::vector<Client>* otherClients = channel->getChannelClientsVector();
-					size_t i = 0;
-					while (i < otherClients->size())
-					{
-						int fd = (*otherClients)[i].getClientSock();
-						if (client->getClientSock() != (*otherClients)[i].getClientSock())
-							send(fd, msg.c_str(), msg.size(), 0);
-						i++;
-					}
-				}
+				Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
+				command.privmsgCommandUser(_client, getRangeAsString(vec, 3, vec.size(), " "));
 			}
 		}
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 			close(client->getClientSock());
+		
 		it++;
 	}
 }
@@ -347,21 +325,42 @@ std::vector<std::string> Server::getWords_(const std::string &str)
 
 
 std::string Server::getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter) 
+{
+	if (start > vec.size() || end > vec.size() || start > end) 
+		throw std::out_of_range("Invalid range specified.");
+	// Extract range and concatenate strings
+	std::string result;
+	std::vector<std::string>::iterator it = vec.begin();
+	for (it = vec.begin() + start; it != vec.begin() + end; it++) 
 	{
-		if (start > vec.size() || end > vec.size() || start > end) 
-			throw std::out_of_range("Invalid range specified.");
-
-		// Extract range and concatenate strings
-		std::string result;
-		std::vector<std::string>::iterator it = vec.begin();
-		for (it = vec.begin() + start; it != vec.begin() + end; it++) 
-		{
-			if (!result.empty()) 
-				result += delimiter; // Add a space between words
-			result += *it;
-		}
-		return result;
+		if (!result.empty()) 
+			result += delimiter; // Add a space between words
+		result += *it;
 	}
+	return result;
+}
 
 
+Client *Server::getClientFromServer(const std::string& nickname)
+{
+	size_t i = 0;
+	while(i != clients.size())
+	{
+		if (clients[i].getNickName() == nickname)
+			return &(clients[i]);
+	}
+	return NULL;
+}
 
+
+Client *Server::getServerClient(const std::string &str)
+{
+	size_t i = 0;
+	while (i != this->clients.size())
+	{
+		if (clients[i].getNickName() == str)
+			return &(clients[i]);
+		i++;	
+	}
+	return NULL;
+}

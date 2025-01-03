@@ -87,7 +87,7 @@ std::vector<Channel> Command::getChannelVector() const
 
 void Command::passCommand(Client *client)
 {
-	if (!client->isEmptyName())
+	if (!client->isEmptyName(client->getNickName(), client->getUserName()))
 	{
 		const std::string& msg = "Welcome " + client->getNickName() + " among us\r\n";
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
@@ -97,9 +97,9 @@ void Command::passCommand(Client *client)
 }
 
 
-const char* Command::msg(std::string hostname, std::string ipaddress, std::string channelname)
+const char* Command::standardMsg(std::string hostname, std::string ipaddress, std::string channelname)
 {
-	std::string rep = ":" + hostname + " @" + ipaddress + " JOIN #" + channelname + "\r\n\0";
+	std::string rep = ":" + hostname + " @" + ipaddress + " JOIN #" + channelname;
 	return rep.c_str();
 }
 
@@ -115,23 +115,55 @@ void Command::joinCommand(const std::string &param, Client *client)
 			client->isModerator(true);
 			this->channels.push_back(newChannel);
 
-			const std::string& create = RPL_CREATIONTIME(client->getNickName(), newChannel.getChannelName(), newChannel.getCurrentTimestamp());
-			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + create + "\r\n";
+			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + RPL_CREATIONTIME(client->getNickName(), newChannel.getChannelName(), newChannel.getCurrentTimestamp()) + "\r\n";
 			send(client->getClientSock(), msg.c_str(), msg.size(), 0);  // The msg appears in the server interface on hexchat not the channel
 		}
 		else if (channelExist(param) == true)
 		{
-			getChannelByName(param)->AddUser2Channel(client);
-			const std::string& welcome = client->getUserName() + " has joined the channel " + param + "\r\n";
-			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + welcome + "Here is the list of users in the channel " + param.substr(1) + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
-			sendData(client->getClientSock(), msg.c_str());
-			//const std::string &users =
+			if (getChannelByName(param)->channelIsFull() == true)
+			{
+				const std::string& msg = ":IRC" + ERR_CHANNELISFULL(client->getNickName(), getChannelByName(param)->getChannelName());
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return;
+			}
+			else if (getChannelByName(param)->userExist(client->getNickName()) || 
+					 getChannelByName(param)->userExist(client->getUserName()) ||
+					 getChannelByName(param)->userExist(client->getIpAddress()))
+			{
+				const std::string& msg = ":IRC" + ERR_NICKNAMEINUSE(client->getNickName(), client->getNickName());
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return ;
+
+			}
+			if (getChannelByName(param)->getInviteMode() == true)
+			{
+				const std::string& msg = ":IRC" + ERR_INVITEONLYCHAN(client->getNickName(), getChannelByName(param)->getChannelName());
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return;
+			}
+			else
+			{
+				getChannelByName(param)->AddUser2Channel(client);
+				const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + RPL_WELCOME(client->getNickName(), "IRC")	 + "Here is the list of users in the channel " + param.substr(1) + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
+				sendData(client->getClientSock(), msg.c_str());
+				return ;
+			}
 		}
 	}
 	else
 	{
-		std::cout << "SHINRA TENSEI" << std::endl;
+		const std::string& msg = ":IRC" + ERR_NOSUCHCHANNEL(client->getNickName(), getChannelByName(param)->getChannelName());
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);	
 	}
 }
 
 
+Channel *Command::getChannelByName(const std::string& name)
+	{
+		for (size_t i = 0; i != channels.size(); i++)
+		{
+			if (channels[i].getChannelName() == name)
+				return &(channels[i]);
+		}
+		return NULL;
+	}

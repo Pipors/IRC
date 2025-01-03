@@ -31,7 +31,7 @@ public :
 	std::string getNickName() const;
 	void setValid(bool );
 	void isModerator(bool val);
-	bool isEmptyName() const;
+	bool isEmptyName(const std::string& nick, const std::string& user) const;
 
 	bool getClientModeration() const;
 	bool isValid() const

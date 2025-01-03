@@ -86,9 +86,9 @@ bool Client::getClientModeration() const
     return this->moderator;
 }
 
-bool Client::isEmptyName() const
+bool Client::isEmptyName(const std::string& nick, const std::string& user) const
 {
-    if (this->getNickName().empty() || this->getUserName().empty())
+    if (nick.empty() || user.empty())
         return true;
     return false;
 }

@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 
-Channel::Channel() :isCreated(0), hasPasswd(0), channelName("")
+Channel::Channel() :isCreated(0), hasPasswd(0), inviteMode(0), channelLimit(10) ,channelName("")
 {
 
 }
@@ -47,9 +47,19 @@ std::string Channel::getChannelName() const
 	return this->channelName;
 }
 
+void Channel::setInviteMode(bool &mode)
+{
+	this->inviteMode = mode;
+}
+
 void Channel::setPasswd(bool &val)
 {
 	this->hasPasswd = val;
+}
+
+bool Channel::getInviteMode()
+{
+	return this->inviteMode;
 }
 
 bool Channel::getPasswd()
@@ -91,4 +101,28 @@ std::string Channel::getCurrentTimestamp()
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
     
     return std::string(buffer);
+}
+
+void Channel::setChannelLimit(const int& i)
+{
+	this->channelLimit = i;
+}
+
+bool Channel::channelIsFull()
+{
+	return (this->channelLimit == channelClients.size() ? true : false);
+}
+
+bool Channel::userExist(const std::string &name)
+{
+	std::vector<Client>::iterator it = channelClients.begin();
+
+	while (it != channelClients.end())
+	{
+		if (it->getNickName() == name || it->getNickName() == name || it->getIpAddress() == name)
+			return true;
+		it++;
+	}
+
+	return false;
 }

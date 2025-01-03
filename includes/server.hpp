@@ -63,6 +63,7 @@ public :
 	/* GETTERS */
 	int getServerFd() const;
 	std::string getPasswd() const;
+	std::string getName() const;
 	uint16_t getMonitorSize() const;
 	Client *getClientFromVectorByFd(int _clientSock);
 	std::vector<struct pollfd> getMonitor() const;

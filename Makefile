@@ -10,7 +10,7 @@ EXEC = IRC
 
 all: $(EXEC)
 	@echo "\033[1;32mIRC SERVER AND CLIENT HAS BEEN COMPILED SUCCESSFULLY!\033[0m"
-	@echo "\033[1;32mUSAGE: ./IRC [PORT] [IP ADDRESS]\033[0m"
+	@echo "\033[1;32mUSAGE: ./IRC [PORT] [PASSWD]\033[0m"
 	@echo "\033[1;32mYOUR IP ADDRESS IS:\033[0m"
 	@ipconfig getifaddr en0
 

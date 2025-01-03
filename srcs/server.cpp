@@ -6,7 +6,7 @@ Server::Server()
 	this->serverSock = 0;
 	this->monitor.clear();
 	this->clients.clear();
-	std::string serverName = "";
+	std::string serverName = "IRC";
 }
 
 Server::~Server()
@@ -152,14 +152,23 @@ void Server::recieveData(int clientSock)
 			}
 		}
 		if (*it == "NICK" && client->isValid() == true)
-		{
+		{if (client->isEmptyName(client->getNickName(), client->getUserName()) == false)
+			{
+				const std::string &msg = "Your nick name have been changed.";
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			}
 			client->setNickName(*(it + 1));
 		}
 		if (*it == "USER" && client->isValid() == true)
 		{
+			if (client->isEmptyName(client->getNickName(), client->getUserName()) == false)
+			{
+				const std::string &msg = "Your nick name have been changed.";
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			}
 			client->setUserName(*(it + 1));
 		}
-		if (*it == "JOIN" && client->isEmptyName() == false)
+		if (*it == "JOIN" && client->isEmptyName(client->getNickName(), client->getUserName()) == false)
 		{
 			const std::string& param = *(it + 1);
 			command.joinCommand(param, client);
@@ -314,6 +323,12 @@ std::string Server::getPasswd() const
 {
 	return this->passwd;
 }
+
+std::string Server::getName() const
+{
+	return this->serverName;
+}
+
 
 
 std::vector<std::string> Server::getWords_(const std::string &str)

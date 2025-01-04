@@ -3,37 +3,20 @@
 #include <unistd.h>
 
 
-Channel::Channel() :isCreated(0), hasPasswd(0), inviteMode(0), channelLimit(10) ,channelName("")
+Channel::Channel() : requirePasswd(0), inviteMode(0), channelLimit(10) ,channelName("")
 {
 
 }
 
 
-Channel::Channel(const std::string& _channelName) : isCreated(0), hasPasswd(0), channelName(_channelName), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(0), inviteMode(0), channelLimit(10) ,channelName(_channelName), channelPasswd(""), channelClients(0)
 {
+
 }
 
 
 Channel::~Channel()
 {
-}
-
-Channel Channel::createChannel(std::string name)
-{
-	(void) name;
-	return *this;
-}
-
-void Channel::setCreation(bool val)
-{
-	
-	this->isCreated = val;
-}
-
-
-bool Channel::getCreation() const
-{
-	return this->isCreated;
 }
 
 void Channel::AddUser2Channel(Client* client)
@@ -47,24 +30,15 @@ std::string Channel::getChannelName() const
 	return this->channelName;
 }
 
-void Channel::setInviteMode(bool &mode)
+void Channel::setInviteMode(const bool &mode)
 {
 	this->inviteMode = mode;
 }
 
-void Channel::setPasswd(bool &val)
-{
-	this->hasPasswd = val;
-}
 
 bool Channel::getInviteMode()
 {
 	return this->inviteMode;
-}
-
-bool Channel::getPasswd()
-{
-	return this->hasPasswd;
 }
 
 std::vector<Client> *Channel::getChannelClientsVector()
@@ -103,10 +77,6 @@ std::string Channel::getCurrentTimestamp()
     return std::string(buffer);
 }
 
-void Channel::setChannelLimit(const int& i)
-{
-	this->channelLimit = i;
-}
 
 bool Channel::channelIsFull()
 {
@@ -127,4 +97,60 @@ bool Channel::userExist(const std::string &name, int nb)
 		it++;
 	}
 	return false;
+}
+
+std::string Channel::getPasswd() const
+{
+	return this->channelPasswd;
+}
+
+
+void Channel::setPasswdRequired(const bool& val)
+{
+	this->requirePasswd = val;
+}
+
+void Channel::setPasswd(const std::string& passwd)
+{
+	this->channelPasswd = passwd;
+	if (!passwd.empty())
+		setPasswdRequired(true);
+	return;
+}
+
+bool Channel::getPasswdRequired() const
+{
+	return this->requirePasswd;
+}
+
+
+bool Channel::channelInviteModeOnly()
+{
+	return (this->inviteMode == true ? true : false);
+}
+
+
+size_t Channel::getChannelClientSize()
+{
+	return this->channelClients.size();
+}
+
+void Channel::resizeClientVector(const size_t& i)
+{
+	if (i < channelClients.size())
+		this->channelLimit = i;
+	channelClients.resize(channelLimit);
+	return;
+}
+
+Client *Channel::getClientFromChannelByName(const std::string& name)
+{
+	size_t i = 0;
+	while (i < channelClients.size())
+	{
+		if (channelClients[i].getNickName() == name)
+			return &(channelClients[i]);
+		i++;	
+	}
+	return NULL;
 }

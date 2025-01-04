@@ -159,11 +159,10 @@ void Server::recieveData(int clientSock)
 			}
 			client->setUserName(*(it + 1));
 		}
+		
 		if (*it == "JOIN" && client->isEmptyName(client->getNickName(), client->getUserName()) == false)
-		{
-			const std::string& param = *(it + 1);
-			command.joinCommand(param, client);
-		}
+			command.joinCommand(*(it + 1), *(it + 2), client);
+
 		if (*it == "PRIVMSG")
 		{
 			const std::string& param = *(it + 1);
@@ -175,6 +174,16 @@ void Server::recieveData(int clientSock)
 				command.privmsgCommandUser(_client, getRangeAsString(vec, 3, vec.size(), " "));
 			}
 		}
+
+		if (*it == "MODE")
+		{
+			const std::string& target = *(it + 1);
+			const std::string& modestring = *(it + 2);
+			const std::string& arg = *(it + 3);
+			if (target[0] == '#')
+				command.modeCommand(client, target, modestring, arg);
+		}
+
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 			close(client->getClientSock());
 		

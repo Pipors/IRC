@@ -26,34 +26,33 @@ public :
 	Command();
 	~Command();
 
-	std::string standardMsg(std::string hostname, std::string ipaddress, std::string channelname);
 	
-	bool channelExist(const std::string& name);
+	bool channelExist(const std::string& );
 	
 	std::string getCommandLine() const;
 	std::string getParameter1() const; 
 	std::string getParameter2() const; 
-	// void checkPasswd(std::string passwd, Client client);
-	// void init(char *message);
-	void joinCommand(const std::string &param, Client *client);
-	void parseHexChat(const std::string &param, std::string passwd, Client client);
-	void passCommand(Client *client, const std::string& param, const std::string &passwd);
-	void sendData(int newsocket, const std::string& msg);
-	void setCommandLine(char*  command);
-	void setParameters(std::string param1, std::string param2);
-	void privmsgCommandChannel(const std::string &param, Client *client, const std::string& tosend);
-	void privmsgCommandUser(Client *client, const std::string& tosend);
-	std::vector<std::string> getWords(const std::string& str);
+	std::string standardMsg(std::string, std::string, std::string );
+
+	void passCommand(Client *, const std::string&, const std::string &);
+	void joinCommand(const std::string &, const std::string&, Client *);
+	void modeCommand(Client *,const std::string&, const std::string&, const std::string&);
+	void sendData(int, const std::string& );
+	void setCommandLine(char*  );
+	void setParameters(std::string, std::string );
+	void privmsgCommandChannel(const std::string &, Client *, const std::string& );
+	void privmsgCommandUser(Client *, const std::string& );
+
+	std::vector<std::string> getWords(const std::string& );
 	std::vector<Channel> getChannelVector() const;
 	
-	Channel *getChannelByName(const std::string& name);
+	Channel *getChannelByName(const std::string& );
 
 private :
 	std::string commandLine;
 	std::string parameter1;
 	std::string parameter2;
 	std::vector<Channel> channels;
-	// uint16_t commandLen;
 };
 
 

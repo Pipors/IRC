@@ -15,32 +15,32 @@ public :
 	Channel(const std::string& _channelName);
 	~Channel();
 
-	bool getCreation() const;
-	bool getPasswd();
+	void resizeClientVector(const size_t&);
+	void AddUser2Channel(Client*);
+	void setInviteMode(const bool &);
+	void setPasswdRequired(const bool&);
+	void setPasswd(const std::string&);
 
-	void AddUser2Channel(Client* User);
-	void setCreation(bool val);
-	void setInviteMode(bool &);
-	void setPasswd(bool &);
-	void setChannelLimit(const int& i);
 
 	bool channelIsFull();
-	bool userExist(const std::string &name, int nb);
+	bool userExist(const std::string &, int);
 	bool getInviteMode();
-	bool channelInviteModeOnly(const std::string &name);
+	bool channelInviteModeOnly();
+	bool getPasswdRequired() const;
+
 
 	std::string getChannelName() const;
 	std::string getChannelClientByName();
+	std::string getPasswd() const;
 	std::string getCurrentTimestamp();
 
+	size_t getChannelClientSize();
 	std::vector<Client> *getChannelClientsVector();
 
-	Channel createChannel(std::string name);
-
+	Client *getClientFromChannelByName(const std::string& name);
 
 private :
-	bool isCreated;
-	bool hasPasswd;
+	bool requirePasswd;
 	bool inviteMode;
 	size_t channelLimit;
 	std::string channelName;

@@ -62,6 +62,7 @@ void Command::sendData(int newsocket, const std::string& msg)
 {
 	if (send(newsocket, msg.c_str(), msg.size(), 0) <= 0)
 		std::cerr << ERR_FUNCSEND << std::endl;
+	return ;
 }
 
 
@@ -109,16 +110,121 @@ std::string Command::standardMsg(std::string nick, std::string user, std::string
 	return rep;
 }
 
-void Command::joinCommand(const std::string &param, Client *client)
+
+
+void Command::modeCommand(Client *client, const std::string&target, const std::string& modestring, const std::string& arg) // param is the word after MODE : +/-i,t,l,o,k
+{
+
+	if (target.empty() || modestring.empty() || arg.empty())
+		return;
+
+	Channel *channel = getChannelByName(target);
+	if (!channel)
+		return;
+	if (client->isModerator() == false)
+	{
+		const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), channel->getChannelName());
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return;
+	}
+	const std::string& test = modestring.substr(1);
+	std::string msg ;
+	size_t i = 0;
+	switch (modestring[0])
+	{
+		case '+':
+		while (i != test.size())
+		{
+			switch (modestring[i])
+			{
+				case 'i':
+				channel->setInviteMode(true);
+				msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + "+i\r\n";
+				sendData(client->getClientSock(), msg.c_str());
+				break;
+
+				case 'k':
+				if (channel->getPasswdRequired() == true)
+				{
+					msg = ":IRC " + ERR_KEYSET(client->getNickName(), channel->getChannelName());
+					sendData(client->getClientSock(), msg.c_str());
+				}
+				if (channel->getPasswdRequired() == false)
+				{
+					channel->setPasswd(arg);
+					msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + "+k\r\n";	
+					sendData(client->getClientSock(), msg.c_str());
+				}
+				break;
+
+				case 'l': //redifine the limit number of client in a channel
+				if (client->isModerator() == true && channel->getChannelName()[0] == '#')
+					channel->resizeClientVector(atoi(arg.c_str()));
+				break;
+
+				case 'o':
+				if (channel->getClientFromChannelByName(arg) == NULL)
+				{
+					msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
+					sendData(client->getClientSock(), msg.c_str());
+					return;
+				}
+				channel->getClientFromChannelByName(arg)->setModerator(true);
+				break;
+
+				// case 't':
+
+				// break;
+			}
+			i++;
+		}
+		break;
+		case '-':
+		while (i != test.size())
+		{
+			switch (modestring[i])
+			{
+				case 'i':
+				channel->setInviteMode(false);
+				msg= standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + "-i\r\n";
+				sendData(client->getClientSock(), msg.c_str());
+				break;
+
+				case 'k':
+				channel->setPasswdRequired(false);
+				break;
+
+				case 'l': //redifine the limit number of client in a channel
+				if (client->isModerator() == true && channel->getChannelName()[0] == '#')
+					channel->resizeClientVector(atoi(arg.c_str()));
+				break;
+
+				case 'o':
+				channel->getClientFromChannelByName(arg)->setModerator(false);
+				break;
+
+				// case 't':
+
+				// break;
+			}
+			i++;
+		}
+		break;
+	}
+}
+
+
+
+
+void Command::joinCommand(const std::string &param, const std::string& passwd, Client *client)
 {
 	if (param[0] == '#')
 	{
 		if (channelExist(param) == false)
 		{
 			Channel newChannel(param);
-			newChannel.setCreation(true);
 			newChannel.AddUser2Channel(client);
-			client->isModerator(true);
+			client->setModerator(true);
 			this->channels.push_back(newChannel);
 
 			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + RPL_CREATIONTIME(client->getNickName(), newChannel.getChannelName(), newChannel.getCurrentTimestamp()) + "\r\n";
@@ -126,31 +232,52 @@ void Command::joinCommand(const std::string &param, Client *client)
 		}
 		else if (channelExist(param) == true)
 		{
-			if (getChannelByName(param)->channelIsFull() == true)
+			Channel *channel = getChannelByName(param);
+
+			if (channel->channelInviteModeOnly() == true)
 			{
-				const std::string& msg = ":IRC" + ERR_CHANNELISFULL(client->getNickName(), getChannelByName(param)->getChannelName());
+				const std::string& msg = ERR_INVITEONLYCHAN(client->getNickName(), channel->getChannelName());
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 				return;
 			}
-			else if (getChannelByName(param)->userExist(client->getNickName(), client->getClientSock()) || 
-					 getChannelByName(param)->userExist(client->getUserName(), client->getClientSock()) ||
-					 getChannelByName(param)->userExist(client->getIpAddress(), client->getClientSock()))
+
+			if (channel->getPasswdRequired() == true)
+			{
+				if (strncmp(passwd.c_str(), channel->getPasswd().c_str(), channel->getPasswd().size()) != 0)
+				{
+					const std::string& msg = ERR_PASSWDMISMATCH(client->getNickName());
+					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				}
+				return;
+			}
+
+			if (channel->channelIsFull() == true)
+			{
+				const std::string& msg = ":IRC" + ERR_CHANNELISFULL(client->getNickName(), channel->getChannelName());
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return;
+			}
+
+			if (channel->userExist(client->getNickName(), client->getClientSock()) || 
+				channel->userExist(client->getUserName(), client->getClientSock()) ||
+				channel->userExist(client->getIpAddress(), client->getClientSock()))
 			{
 				const std::string& msg = ":IRC " + ERR_NICKNAMEINUSE(client->getNickName(), client->getNickName());
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 				return ;
-
 			}
-			if (getChannelByName(param)->getInviteMode() == true)
+
+			if (channel->getInviteMode() == true)
 			{
-				const std::string& msg = ":IRC" + ERR_INVITEONLYCHAN(client->getNickName(), getChannelByName(param)->getChannelName());
+				const std::string& msg = ":IRC" + ERR_INVITEONLYCHAN(client->getNickName(), channel->getChannelName());
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 				return;
 			}
+
 			else
 			{
-				getChannelByName(param)->AddUser2Channel(client);
-				const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + RPL_WELCOME(client->getNickName(), "IRC")	 + "Here is the list of users in the channel " + param.substr(1) + "\n" + getChannelByName(param)->getChannelClientByName() + "\r\n";
+				channel->AddUser2Channel(client);
+				const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + param + " * " + client->getRealName() + " :" + RPL_WELCOME(client->getNickName(), "IRC")	 + "Here is the list of users in the channel " + param.substr(1) + "\n" + channel->getChannelClientByName() + "\r\n";
 				sendData(client->getClientSock(), msg.c_str());
 				return ;
 			}
@@ -214,4 +341,6 @@ void Command::privmsgCommandUser(Client *client, const std::string& tosend)
 		return ;
 	}
 }
+
+
 

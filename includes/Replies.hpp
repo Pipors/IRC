@@ -26,6 +26,7 @@
 #define ERR_UNKNOWNCOMMAND(client, command)												("421 " + client + " " + command + " :Unknown command\r\n")
 #define ERR_NORECIPIENT(client, command)												("411 " + client + " " + command + " :No recipient given (" + command + ")\r\n")
 #define ERR_NOTEXTTOSEND(client)														("412 " + client + " :No text to send\r\n")
+#define ERR_BADNICKNAME(client)														("511 " + client + " :Must be changed... use NICK command\r\n")
 // #define ERR_UNKNOWNMODE(client, modechar)											("472 " + client + " " + modechar + " :is unknown mode char to me\r\n")
 
 
@@ -35,7 +36,7 @@
 //               //
 ///////////////////
 
-#define RPL_WELCOME(client, servername)													("001 " + client + " :Welcome to" + servername + "the most amazing IRC server u can use it to sell drugs, buy guns and do whatever you want\r\n")
+#define RPL_WELCOME(client, servername)													("001 " + client + " :Welcome to " + servername + " the most amazing IRC server u can use it to sell drugs, buy guns and do whatever you want\r\n")
 #define RPL_NOTOPIC(client, channel) 													("331 " + client + " " + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(client, channel, topic) 												("332 " + client + " " + channel + " :" + topic + "\r\n")
 #define RPL_TOPICWHOTIME(client, channel, nick, setat) 									("333 " + client + " " + channel + " " + nick + " " + setat + "\r\n")

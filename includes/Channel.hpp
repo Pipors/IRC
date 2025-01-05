@@ -45,6 +45,6 @@ private :
 	size_t channelLimit;
 	std::string channelName;
 	std::string channelPasswd;
-	std::vector<Client> channelClients;
+	std::vector<Client> channelClients;     // Storing the clients joining a channel
 };
 

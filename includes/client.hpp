@@ -15,35 +15,35 @@
 class Client
 {
 public :
+	
 	Client();
 	Client(const std::string &_userName, const std::string &_nickName);
 	~Client();
 	
-	void 			createSocketClient();
-	int 			connectionAttempting();
+	int 			getClientSock() const;
 
 	void 			setClientSock(int fd);
+	void 			setIpAddress(const std::string& _ipAddres);
 	void 			setNickName(const std::string& value);
+	void 			setModerator(bool val);
 	void 			setUserName(const std::string& );
 	void 			setRealName(const std::string& value);
-	void 			setIpAddress(const std::string& _ipAddres);
 	void 			setValid(bool );
-	void 			setModerator(bool val);
 
+	bool			isEligible() const;
 	bool 			isEmptyName(const std::string& nick, const std::string& user) const;
-	bool 			isValid() const;
 	bool 			isModerator() const;
+	bool 			isValid() const;
 
-	int 			getClientSock() const;
 	std::string 	getIpAddress() const; 
-	std::string 	getUserName() const;
 	std::string 	getNickName() const;
 	std::string 	getRealName() const;
+	std::string 	getUserName() const;
 
 	
 private :
-	bool valid;
-	bool moderator;
+	bool valid;  //when entering correct passwd
+	bool moderator; //when creator of channel or has been turned moderator
 	int clientSock;
 	std::string nickName;
 	std::string userName;

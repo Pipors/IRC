@@ -27,18 +27,6 @@
 
 class Server
 {
-private	:
-	int serverSock;							//socket file descriptor for the server 
-	static bool running;
-	std::vector<struct pollfd> monitor;
-	std::vector<Client> clients;
-	std::vector<Channel> channels;
-
-    struct sockaddr_in serverAddr;
-	std::string passwd;
-	std::string serverName;
-	Command command;
-
 public :
 	
 	/* FUNCTIONS SETTING UP THE SERVER */
@@ -76,6 +64,17 @@ public :
 
 	Server();
 	~Server();
+
+private	:
+	int serverSock;							//socket file descriptor for the server 
+	std::string passwd;                     // Passwd jo join the server
+	std::string serverName;
+    struct sockaddr_in serverAddr;
+	static bool running;
+	std::vector<struct pollfd> monitor;
+	std::vector<Client> clients;            // Storing the clients who successfully establishde a connection wiht the server
+	Command command;
+
 };
 
 

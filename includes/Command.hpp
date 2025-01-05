@@ -27,26 +27,23 @@ public :
 	~Command();
 
 	
-	bool channelExist(const std::string& );
+	bool channelExist(const std::string &);
 	
-	std::string getCommandLine() const;
-	std::string getParameter1() const; 
-	std::string getParameter2() const; 
-	std::string standardMsg(std::string, std::string, std::string );
+	std::string standardMsg(std::string, std::string, std::string);
 
-	void passCommand(Client *, const std::string&, const std::string &);
-	void joinCommand(const std::string &, const std::string&, Client *);
-	void modeCommand(Client *,const std::string&, const std::string&, const std::string&);
-	void sendData(int, const std::string& );
-	void setCommandLine(char*  );
-	void setParameters(std::string, std::string );
-	void privmsgCommandChannel(const std::string &, Client *, const std::string& );
-	void privmsgCommandUser(Client *, const std::string& );
+	void 	easyCheck(Client *, const std::string&); //processing the returned value of isEligible() function
+	void 	joinCommand(const std::string &, const std::string&, Client *);
+	void 	modeCommand(Client *,const std::string &, const std::string &, const std::string &);
+	void 	passCommand(Client *, const std::string &, const std::string &);
+	void 	privmsgCommandChannel(const std::string &, Client *, const std::string &);
+	void 	privmsgCommandUser(Client *, const std::string &);
+	void 	sendData(int, const std::string &);
 
-	std::vector<std::string> getWords(const std::string& );
-	std::vector<Channel> getChannelVector() const;
+
+	std::vector<Channel> 	 getChannelVector() const;
+	std::vector<std::string> getWords(const std::string &);
 	
-	Channel *getChannelByName(const std::string& );
+	Channel 				 *getChannelByName(const std::string &);
 
 private :
 	std::string commandLine;

@@ -6,12 +6,12 @@
 
 Client::Client() : valid(false), moderator(false), nickName("Guest"), userName("Guest")
 {
-    this->realName = "";
+    this->realName = "realname";
 }
 
 Client::Client(const std::string& _userName, const std::string& _nickName) : valid(false), moderator(false), nickName(_nickName), userName(_userName)
 {
-
+    this->realName = "realname";
 }
 
 Client::~Client()
@@ -32,6 +32,8 @@ void Client::setUserName(const std::string& value)
 
 void Client::setNickName(const std::string& value)
 {
+    if (value.empty())
+        throw std::out_of_range("OHO");
     this-> nickName = value;
 } 
 
@@ -84,7 +86,7 @@ bool Client::isModerator() const
 
 bool Client::isEmptyName(const std::string& nick, const std::string& user) const
 {
-    if (nick.empty() || user.empty())
+    if (nick.empty() || user.empty() || strncmp(nick.c_str(), "Guest", sizeof("Guest")) == 0 || strncmp(user.c_str(), "Guest", sizeof("Guest")) == 0)
         return true;
     return false;
 }
@@ -99,4 +101,16 @@ std::string Client::getRealName() const
 bool Client::isValid() const
 {
 	return this->valid;
+}
+
+
+
+// Checking if the client is connected with the server with a nick and user non empty and not "Guest"
+// It doesn't check if the nick is already taken a by channel's member
+// Returns false when client had everything okay
+bool Client::isEligible() const
+{
+    if (isValid() == true && !isEmptyName(getNickName(), getUserName()))
+        return true;
+    return false;
 }

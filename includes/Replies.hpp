@@ -26,7 +26,8 @@
 #define ERR_UNKNOWNCOMMAND(client, command)												("421 " + client + " " + command + " :Unknown command\r\n")
 #define ERR_NORECIPIENT(client, command)												("411 " + client + " " + command + " :No recipient given (" + command + ")\r\n")
 #define ERR_NOTEXTTOSEND(client)														("412 " + client + " :No text to send\r\n")
-#define ERR_BADNICKNAME(client)														("511 " + client + " :Must be changed... use NICK command\r\n")
+#define ERR_BADNICKNAME(client)															("511 " + client + " :Must be changed... use NICK command\r\n")
+#define ERR_CHANHASPASS(channel)														("120 " + channel + " :Channel require a password\r\n")
 // #define ERR_UNKNOWNMODE(client, modechar)											("472 " + client + " " + modechar + " :is unknown mode char to me\r\n")
 
 

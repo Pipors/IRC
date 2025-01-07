@@ -40,7 +40,7 @@ public :
 	Client *getClientFromChannelByName(const std::string& name);
 
 private :
-	bool requirePasswd;
+	bool requirePasswd;                    // for joining a channel
 	bool inviteMode;
 	size_t channelLimit;
 	std::string channelName;

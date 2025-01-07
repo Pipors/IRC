@@ -117,6 +117,8 @@
     "unordered_map": "cpp",
     "utility": "cpp",
     "vector": "cpp",
-    "csignal": "cpp"
+    "csignal": "cpp",
+    "strstream": "cpp",
+    "docs": "cpp"
   }
 }

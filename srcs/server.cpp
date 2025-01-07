@@ -3,7 +3,7 @@
 Server::Server()
 {
 	this->passwd = "";
-	this->serverSock = 0;
+	this->serverSock = -1;
 	this->monitor.clear();
 	this->clients.clear();
 	std::string serverName = "IRC";
@@ -57,6 +57,7 @@ void Server::acceptNewConnection()
 {
 	Client client;
 	int newsocket;
+	
 	struct sockaddr_in sockAddrClient;  // The information about the client (IPv4/v6, port) will be filled in this struct
 	struct pollfd clientPoll;
 	socklen_t len = sizeof(sockAddrClient);
@@ -66,6 +67,8 @@ void Server::acceptNewConnection()
         throwError("Conenction failed", serverSock);
 	}
 	std::cout << "Connection is established successfuly with client N˚" << newsocket - 3 << std::endl;
+	const std::string& msg = RPL_WELCOME(client.getNickName(), "IRC");
+	send(newsocket, msg.c_str(), msg.size(), 0);
 
 
 	clientPoll.fd = newsocket;
@@ -128,78 +131,8 @@ void Server::recieveData(int clientSock)
 		return;
 	}
 	message[rbyte] = '\0';
-
-	const std::string& msg = message;
-	std::vector<std::string> vec(getWords_(msg));               // Splitting the message sent by client word by word
-	std::vector<std::string>::iterator it = vec.begin();        // Iterating through the vector containing the message
 	Client *client = this->getClientFromVectorByFd(clientSock); // Pointing to the client who sent the message in the vector
-
-	std::cout << message;
-	while (it != vec.end())
-	{
-		if (*it == "PASS")
-			command.passCommand(client, *(it + 1), getPasswd());
-		if ((*it == "NICK" || *it == "USER") && client->isValid() == true)
-		{
-			std::string msg = "";
-			
-			if ((it + 1)->empty())
-			{
-				std::cout << "LAA HABIBI" << std::endl;
-				return;
-			}
-			
-			if(*it  == "NICK")
-			{
-				client->setNickName(*(it + 1));
-				msg = "Your nick name have been changed.\r\n";
-			}
-			
-			if (*it == "USER")
-			{
-				client->setUserName(*(it + 1));
-				msg = "Your user name have been changed.\r\n";
-			}
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			std::cout << client->isEligible() << std::endl;
-			return ;
-		}
-		if (*it == "JOIN")
-		{
-			command.joinCommand(*(it + 1), *(it + 2), client);
-		}
-
-		if (*it == "PRIVMSG")
-		{
-			const std::string& param = *(it + 1); 
-			if (param[0] == '#') // channel's name
-				command.privmsgCommandChannel(param, client, getRangeAsString(vec, 2, vec.size(), " "));
-			else
-			{
-				Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
-				command.privmsgCommandUser(_client, getRangeAsString(vec, 2, vec.size(), " "));
-			}
-		}
-
-		if (*it == "MODE")
-		{
-			const std::string& target = *(it + 1);
-			const std::string& modestring = *(it + 2);
-			const std::string& arg = *(it + 3);
-			// if (target.empty() || modestring.empty() || arg.empty())
-			// {
-			// 	const std::string& msg = ERR_NEEDMOREPARAMS(client->getNickName(), *it);
-			// 	send(clientSock, msg.c_str(), msg.size(), 0);
-			// 	return ;
-			// }
-			command.modeCommand(client, target, modestring, arg);
-		}
-
-		if (*it == "QUIT" && *(it + 1) == ":Leaving")
-			close(client->getClientSock());
-		
-		it++;
-	}
+	processCommand(client, message);
 }
 
 /* Sending msg to client */
@@ -382,4 +315,24 @@ Client *Server::getServerClient(const std::string &str)
 		i++;	
 	}
 	return NULL;
+}
+
+// true when strings are identical
+bool Server::equalStrings(const std::string& it, const std::string& compare)
+{
+	return (strncmp(it.c_str(), compare.c_str(), compare.size()) == 0);
+}
+
+
+void Server::notCommand(const std::string& str)
+{
+	if (str != "PASS"
+		&& str != "INVITE"
+		&& str != "MODE"
+		&& str != "NICK"
+		&& str != "USER"
+		&& str != "KICK"
+		&& str != "PRIVMSG"
+		&& str != "PART")
+		return;
 }

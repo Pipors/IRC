@@ -18,6 +18,7 @@
 #include "Channel.hpp"
 #include <fcntl.h>
 #include "Channel.hpp"
+#include "Replies.hpp"
 
 #define RPL_NICKCHANGE(oldnickname, nickname) (":" + oldnickname + " NICK " + nickname + CRLF)
 
@@ -33,7 +34,9 @@ public :
 	void setServerSock(int port);
 	void acceptNewConnection();
 	void runningServer(int port, const char *av);
+	void processCommand(Client *, const char* message);
 
+	bool equalStrings(const std::string& it, const std::string& compare);
 	/* FUCNTIONS HANDLING SENDING AND RECIEVING MSG */
 	void recieveData(int clienSock);
 	void parseCommand(int newsocket);
@@ -61,12 +64,13 @@ public :
 	std::vector<std::string> getWords_(const std::string &str);
 	Client *getServerClient(const std::string &str);
 	std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter);
+	void notCommand(const std::string&);
 
 	Server();
 	~Server();
 
 private	:
-	int serverSock;							//socket file descriptor for the server 
+	int serverSock ;							//socket file descriptor for the server 
 	std::string passwd;                     // Passwd jo join the server
 	std::string serverName;
     struct sockaddr_in serverAddr;

@@ -31,8 +31,8 @@ public :
 	
 	std::string standardMsg(std::string, std::string, std::string);
 
-	void 	easyCheck(Client *, const std::string&); //processing the returned value of isEligible() function
-	void 	joinCommand(const std::string &, const std::string&, Client *);
+	void 	eligibiltyErr(Client *, const std::string&); //processing the returned value of isEligible() function
+	void 	joinCommand(Client *, const std::string &, const std::string&);
 	void 	modeCommand(Client *,const std::string &, const std::string &, const std::string &);
 	void 	passCommand(Client *, const std::string &, const std::string &);
 	void 	privmsgCommandChannel(const std::string &, Client *, const std::string &);

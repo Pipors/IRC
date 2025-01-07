@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(0), inviteMode(0), channelLimit(10) ,channelN
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(0), inviteMode(0), channelLimit(10) ,channelName(_channelName), channelPasswd(""), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), channelLimit(10) ,channelName(_channelName), channelPasswd(""), channelClients(0)
 {
 
 }
@@ -154,3 +154,4 @@ Client *Channel::getClientFromChannelByName(const std::string& name)
 	}
 	return NULL;
 }
+

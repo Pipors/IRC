@@ -14,7 +14,6 @@ int main(int ac, const char **av)
     int nb;
     std::stringstream  s(av[1]);
     s >> nb;
-
     try
     {
         // signal(SIGINT, Server::signalHandler);

@@ -27,13 +27,15 @@ void Client::setClientSock(int fd)
 
 void Client::setUserName(const std::string& value)
 {
+    if (value.empty())
+        throw std::out_of_range("OHO USERNAME");
     this->userName = value;
 }
 
 void Client::setNickName(const std::string& value)
 {
     if (value.empty())
-        throw std::out_of_range("OHO");
+        throw std::out_of_range("OHO NICKNAME");
     this-> nickName = value;
 } 
 

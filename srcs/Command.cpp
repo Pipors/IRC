@@ -32,7 +32,6 @@ void Command::sendData(int newsocket, const std::string& msg)
 {
 	if (send(newsocket, msg.c_str(), msg.size(), 0) <= 0)
 		std::cerr << ERR_FUNCSEND << std::endl;
-	return ;
 }
 
 
@@ -120,8 +119,8 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 					if (channel->getPasswdRequired() == false)
 					{
 						channel->setPasswd(arg);
-						channel->setPasswdRequired(true);
-						msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +k\r\n";	
+						std::cout << "PASS REQUIRED : " << channel->getPasswdRequired()  << "\n";
+						msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " " + channel->getPasswd() + " +k\r\n";	
 						sendData(client->getClientSock(), msg.c_str());
 					}
 					break;
@@ -187,7 +186,6 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 
 void Command::joinCommand(Client *client, const std::string &param, const std::string& passwd)
 {
-	eligibiltyErr(client, "waaa3");
 	if (param[0] == '#')
 	{
 		if (channelExist(param) == false)
@@ -206,26 +204,25 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 
 			if (channel->channelInviteModeOnly() == true)
 			{
-				const std::string& msg = ERR_INVITEONLYCHAN(client->getNickName(), channel->getChannelName());
-				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-				// return;
+				sendData(client->getClientSock(),  ERR_INVITEONLYCHAN(client->getNickName(), channel->getChannelName()));
+				return;
 			}
+
 
 			if (channel->getPasswdRequired() == true)
 			{
+				std::cout << "MEWOW" << std::endl;
 				if (strncmp(passwd.c_str(), channel->getPasswd().c_str(), channel->getPasswd().size()) != 0)
 				{
-					const std::string& msg = ERR_PASSWDMISMATCH(client->getNickName());
-					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+					sendData(client->getClientSock(), ERR_PASSWDMISMATCH(client->getNickName()));
+					return;
 				}
-				// return;
 			}
 
 			if (channel->channelIsFull() == true)
 			{
-				const std::string& msg = ":IRC" + ERR_CHANNELISFULL(client->getNickName(), channel->getChannelName());
-				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-				// return;
+				sendData(client->getClientSock(), ERR_CHANNELISFULL(client->getNickName(), channel->getChannelName()));
+				return;
 			}
 
 			if (channel->userExist(client->getNickName(), client->getClientSock()) || 
@@ -278,13 +275,16 @@ void Command::privmsgCommandChannel(const std::string &channelname, Client *clie
 	eligibiltyErr(client, "");
 	//Point to the channel in where the message were sent
 	Channel *channel = getChannelByName(channelname);
+	if (channel == NULL)
+	{
+		sendData(client->getClientSock(), ERR_NOSUCHCHANNEL(client->getNickName(), channelname));
+		return ;
+	}
 	if (channel->getClientFromChannelByName(client->getNickName()) == NULL)
 	{
 		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 	}
-	if (channel == NULL)
-		return ;
 	const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + channelname + " " + tosend + "\r\n";
 	//Point to the channelClient vector in Channel
 	std::vector<Client>* otherClients = channel->getChannelClientsVector();
@@ -324,3 +324,6 @@ void Command::eligibiltyErr(Client *client, const std::string& msg)
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 	return;
 }
+
+
+

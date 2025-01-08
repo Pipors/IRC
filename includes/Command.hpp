@@ -29,9 +29,9 @@ public :
 	
 	bool channelExist(const std::string &);
 	
-	std::string standardMsg(std::string, std::string, std::string);
+	
 
-	void 	eligibiltyErr(Client *, const std::string&); //processing the returned value of isEligible() function
+	void	eligibiltyErr(Client *, const std::string&); //processing the returned value of isEligible() function
 	void 	joinCommand(Client *, const std::string &, const std::string&);
 	void 	modeCommand(Client *,const std::string &, const std::string &, const std::string &);
 	void 	passCommand(Client *, const std::string &, const std::string &);
@@ -40,10 +40,14 @@ public :
 	void 	sendData(int, const std::string &);
 
 
+	std::string standardMsg(std::string, std::string, std::string);
+
+
 	std::vector<Channel> 	 getChannelVector() const;
 	std::vector<std::string> getWords(const std::string &);
-	
-	Channel 				 *getChannelByName(const std::string &);
+
+
+	Channel	*getChannelByName(const std::string &);
 
 private :
 	std::string commandLine;

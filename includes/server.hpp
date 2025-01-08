@@ -54,17 +54,22 @@ public :
 	void setServerPassWd(const char* av);
 	
 	/* GETTERS */
-	int getServerFd() const;
-	std::string getPasswd() const;
-	std::string getName() const;
-	uint16_t getMonitorSize() const;
-	Client *getClientFromVectorByFd(int _clientSock);
-	Client *getClientFromServer(const std::string& nickname);
-	std::vector<struct pollfd> getMonitor() const;
-	std::vector<std::string> getWords_(const std::string &str);
-	Client *getServerClient(const std::string &str);
-	std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter);
-	void notCommand(const std::string&);
+	int		getServerFd() const;
+	bool 	emptyParam(const std::vector<std::string>&, const  std::vector<std::string>::iterator&, const int&, const std::string &);
+	void	notCommand(const std::string&);
+
+	std::string 	getPasswd() const;
+	std::string 	getName() const;
+	std::string		getRangeAsString(std::vector<std::string>, size_t, size_t, std::string);
+
+	std::vector<std::string>	getWords_(const std::string &);
+	std::vector<struct pollfd>	getMonitor() const;
+	
+	Client	*getClientFromServer(const std::string&);
+	Client	*getClientFromVectorByFd(int);
+	Client	*getServerClient(const std::string &);
+
+	uint16_t 					getMonitorSize() const;
 
 	Server();
 	~Server();

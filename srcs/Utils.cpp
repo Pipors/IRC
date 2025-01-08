@@ -15,7 +15,7 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "PASS"))
 		{
-			if (!getPasswd().empty() && ((it + 1) == vec.end() || !equalStrings(*(it + 1), getPasswd())))
+			if ((!getPasswd().empty() && (it + 1) == vec.end()) || !equalStrings(*(it + 1), getPasswd()))
 			{
 				const std::string& msg = ERR_PASSWDMISMATCH(*(it + 1));
 				command.sendData(client->getClientSock(), msg);
@@ -28,26 +28,41 @@ void Server::processCommand(Client* client, const char* message)
 		}
 
 		if (equalStrings(*it, "USER") && client->isValid())
-
+		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return;
 			client->setUserName(*(it + 1));
+		}
 	
 
 		if (equalStrings(*it, "NICK") && client->isValid())
+		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return;
 			client->setNickName(*(it + 1));
+		}
 
 		if (equalStrings(*it, "JOIN") && client->isEligible())
 		{
-			if (command.channelExist(*(it + 1)) && command.getChannelByName(*(it + 1))->getPasswdRequired() && (it + 2) == vec.end())
-			{
-				const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP #JOIN " + ERR_CHANHASPASS(command.getChannelByName(*(it + 1))->getChannelName());
-				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			}
-			else
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return;
+			// else if (command.getChannelByName(*(it + 1))->getPasswdRequired())
+			// {
+			// 	if ((it + 2) == vec.end())
+			// 	{
+			// 		std::cout << "LAAAAAAAA27\n";
+			// 		return ;
+			// 	}
+			// }
+			// else
 				command.joinCommand(client, *(it + 1), *(it + 2));
 		}
 
 		if (equalStrings(*it, "PRIVMSG") && client->isEligible())
 		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return;
+				
 			const std::string& param = *(it + 1); 
 			if (param[0] == '#') // channel's name
 				command.privmsgCommandChannel(param, client, getRangeAsString(vec, 2, vec.size(), " "));

@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 
-Channel::Channel() : requirePasswd(0), inviteMode(0), channelLimit(10) ,channelName("")
+Channel::Channel() : requirePasswd(false), inviteMode(0), channelLimit(10) ,channelName("")
 {
 
 }

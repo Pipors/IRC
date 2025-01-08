@@ -336,3 +336,15 @@ void Server::notCommand(const std::string& str)
 		&& str != "PART")
 		return;
 }
+
+bool Server::emptyParam(const std::vector<std::string>& vec, const std::vector<std::string>::iterator& param, const int &fd, const std::string &msg)
+{
+	
+	if (param == vec.end())
+	{
+		send(fd, msg.c_str(), msg.size(), 0);
+		return true;
+	}
+	return false;
+}
+

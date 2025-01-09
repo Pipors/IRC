@@ -8,22 +8,27 @@ void Server::processCommand(Client* client, const char* message)
 	std::vector<std::string> vec(getWords_(msg));               // Splitting the message sent by client word by word
 	std::vector<std::string>::iterator it = vec.begin();        // Iterating through the vector containing the message  
 	std::cout << message;
+	// (void)client;
+
 
 	while ((it != vec.end()))
 	{
 		notCommand(*it);
-
-		if (equalStrings(*it, "PASS"))
+		if (getPasswd().empty() && !client->isValid())
 		{
-			std::cout << 	getRangeAsString(vec, 1, vec.size(), " ") << " - size : " << getRangeAsString(vec, 1, vec.size(), " ").size() << "\n";
-		
+			client->setValid(true);
+			command.sendData(client->getClientSock(), RPL_WELCOME(client->getNickName(), "IRC"));
+		}
 
-			if ((!getPasswd().empty() && (it + 1) == vec.end()) || !equalStrings(getRangeAsString(vec, 1, vec.size(), " "), getPasswd()))
+		if (equalStrings(*it, "PASS") && !client->isValid())
+		{	
+			if ((it + 1) == vec.end())
 			{
 				const std::string& msg = ERR_PASSWDMISMATCH(*(it + 1));
 				command.sendData(client->getClientSock(), msg);
+				return; // !! mandatory return statement
 			}
-			else if (getPasswd().empty() || (equalStrings(getRangeAsString(vec, 1, vec.size(), " "), getPasswd())))
+			if (equalStrings(getRangeAsString(vec, it + 1, vec.size(), " "), getPasswd()))
 			{
 				client->setValid(true);
 				command.sendData(client->getClientSock(), RPL_WELCOME(client->getNickName(), "IRC"));
@@ -81,20 +86,31 @@ void Server::processCommand(Client* client, const char* message)
 				
 			const std::string& param = *(it + 1); 
 			if (param[0] == '#') // channel's name
-				command.privmsgCommandChannel(param, client, getRangeAsString(vec, 2, vec.size(), " "));
+			{
+				command.privmsgCommandChannel(param, client, getRangeAsString(vec, it, vec.size(), " "));
+				return; //!!
+			}
 			else
 			{
 				Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
-				command.privmsgCommandUser(_client, getRangeAsString(vec, 2, vec.size(), " "));
+				command.privmsgCommandUser(_client, getRangeAsString(vec, it, vec.size(), " "));
+				return; //!!
 			}
 		}
 
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
 
-			if ((it + 1) != vec.end() &&  (it + 2) != vec.end() &&  (it + 3) != vec.end())
+			if ( (it + 1) != vec.end() && (it + 2) != vec.end() && command.channelExist(*(it + 1)))
 			{
-				command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
+					if ((equalStrings(*(it + 2), "+k") || equalStrings(*(it + 2), "+i") || equalStrings(*(it + 2), "+l")) && (it + 3) != vec.end())
+						command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
+					command.modeCommand(client, *(it + 1), *(it + 2), NULL);
+			}
+			else
+			{
+				command.sendData(client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it));
+				return ;
 			}
 		}
 

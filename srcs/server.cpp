@@ -276,22 +276,39 @@ std::vector<std::string> Server::getWords_(const std::string &str)
 }
 
 
-std::string Server::getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter) 
+std::string Server::getRangeAsString(const std::vector<std::string>& vec, std::vector<std::string>::iterator it,  size_t end, std::string delimiter) 
 {
-	if (start > vec.size() || end > vec.size() || start > end) 
+	if (it >= vec.end() || end > vec.size()) 
 		throw std::out_of_range("Invalid range specified.");
 	// Extract range and concatenate strings
 	std::string result = "";
-	std::vector<std::string>::iterator it = vec.begin();
-	for (it = vec.begin() + start; it != vec.begin() + end; it++) 
+	while (it != vec.begin() + end) 
 	{
 		if (!result.empty()) 
 			result += delimiter; // Add a space between words
 		result += *it;
+		it++;
 	}
 	return result;
 }
 
+
+// std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter) 
+// {
+// 	if (start > vec.size() || end > vec.size() || start > end) 
+// 		throw std::out_of_range("Invalid range specified.");
+// 	// Extract range and concatenate strings
+// 	std::string result = "";
+// 	std::vector<std::string>::iterator it = vec.begin() + start;
+// 	while (it != vec.begin() + end) 
+// 	{
+// 		if (!result.empty()) 
+// 			result += delimiter; // Add a space between words
+// 		result += *it;
+// 		it++;
+// 	}
+// 	return result;
+// }
 
 Client *Server::getClientFromServer(const std::string& nickname)
 {

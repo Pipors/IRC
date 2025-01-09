@@ -91,7 +91,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 	}
 	
 
-	if (!modestring.empty() && !arg.empty())
+	if (!modestring.empty())
 	{
 		size_t i = 0;
 		std::string msg = "anas";
@@ -106,7 +106,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 				{
 					case 'i':
 					channel->setInviteMode(true);
-					msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + "+i\r\n";
+					msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName()  + " +i\r\n";
 					sendData(client->getClientSock(), msg.c_str());
 					break;
 

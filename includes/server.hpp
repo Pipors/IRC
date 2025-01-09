@@ -60,7 +60,9 @@ public :
 
 	std::string 	getPasswd() const;
 	std::string 	getName() const;
-	std::string		getRangeAsString(std::vector<std::string>, size_t, size_t, std::string);
+	std::string		getRangeAsString(const std::vector<std::string>&, std::vector<std::string>::iterator,  size_t, std::string);
+	// std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter);
+
 
 	std::vector<std::string>	getWords_(const std::string &);
 	std::vector<struct pollfd>	getMonitor() const;

@@ -15,12 +15,15 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "PASS"))
 		{
-			if ((!getPasswd().empty() && (it + 1) == vec.end()) || !equalStrings(*(it + 1), getPasswd()))
+			std::cout << 	getRangeAsString(vec, 1, vec.size(), " ") << " - size : " << getRangeAsString(vec, 1, vec.size(), " ").size() << "\n";
+		
+
+			if ((!getPasswd().empty() && (it + 1) == vec.end()) || !equalStrings(getRangeAsString(vec, 1, vec.size(), " "), getPasswd()))
 			{
 				const std::string& msg = ERR_PASSWDMISMATCH(*(it + 1));
 				command.sendData(client->getClientSock(), msg);
 			}
-			else if (getPasswd().empty() || (equalStrings(*(it + 1), getPasswd())))
+			else if (getPasswd().empty() || (equalStrings(getRangeAsString(vec, 1, vec.size(), " "), getPasswd())))
 			{
 				client->setValid(true);
 				command.sendData(client->getClientSock(), RPL_WELCOME(client->getNickName(), "IRC"));
@@ -44,18 +47,31 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "JOIN") && client->isEligible())
 		{
+			Channel *chan = NULL;
+			const std::string& name = *(it + 1);
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
-			// else if (command.getChannelByName(*(it + 1))->getPasswdRequired())
-			// {
-			// 	if ((it + 2) == vec.end())
-			// 	{
-			// 		std::cout << "LAAAAAAAA27\n";
-			// 		return ;
-			// 	}
-			// }
-			// else
-				command.joinCommand(client, *(it + 1), *(it + 2));
+			if (name[0] != '#' || name.size() == 1)
+			{
+				command.sendData(client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN"));
+				return;
+			}
+			std::cout << command.channelExist(name) << "\n"; 
+			chan = command.getChannelByName(name);
+			if (chan != NULL)
+			{
+				std::cout << chan->getPasswdRequired() << "\n";
+				if (chan->getPasswdRequired())
+				{
+					std::cout << "sdasdas\n";
+					if ((it + 2) == vec.end())
+					{
+						command.sendData(client->getClientSock(), ERR_CHANHASPASS(chan->getChannelName()));
+						return;
+					}
+				}
+			}
+			command.joinCommand(client, name, *(it + 2));
 		}
 
 		if (equalStrings(*it, "PRIVMSG") && client->isEligible())
@@ -75,16 +91,7 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
-			// const std::string& target = ;
-			// const std::string& modestring = ;
-			// const std::string& arg = ;
-			// if (((*(it + 1)).empty() || (*(it + 2)).empty() || (*(it + 3)).empty()))
-			// {
-			// 	const std::string& msg = ERR_NEEDMOREPARAMS(client->getNickName(), *it);
-			// 	send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			// 	return ;
-			// }
-			// std::cout << "HOOOOOOO " << std::endl;
+
 			if ((it + 1) != vec.end() &&  (it + 2) != vec.end() &&  (it + 3) != vec.end())
 			{
 				command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));

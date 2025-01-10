@@ -36,7 +36,7 @@ void Server::setServerSock(int port)
 	int sockopt = setsockopt(serverSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 	if (sockopt < 0)
 		std::cout << "chi l3ayba tema " << std::endl;
-	if (fcntl(sockopt, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+	if (fcntl(serverSock, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
 		throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
 
 	int _bind = bind(serverSock, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
@@ -66,9 +66,7 @@ void Server::acceptNewConnection()
 	if (newsocket < 0) {
         throwError("Conenction failed", serverSock);
 	}
-	std::cout << "Connection is established successfuly with client N˚" << newsocket - 3 << std::endl;
-	const std::string& msg = RPL_WELCOME(client.getNickName(), "IRC");
-	send(newsocket, msg.c_str(), msg.size(), 0);
+	std::cout << BCYAN << "Connection is established successfuly with client N˚" << newsocket - 3 << ENDC << std::endl;
 
 
 	clientPoll.fd = newsocket;
@@ -167,20 +165,18 @@ void Server::signalHandler(int sig)
 }
 
 
-void Server::removeClientFromServer(int clientsock)
+void Server::removeClientFromServer(int clientSock)
 {
 	std::vector<Client>::iterator it = clients.begin();
-	for (it = clients.begin(); it < clients.end(); it++)
+	while (it != clients.end())
 	{
-		const int &i = it->getClientSock();
-		if (i == clientsock)
-		{
-			close(clients[i].getClientSock());
+		if (it->getClientSock() == clientSock)
 			clients.erase(it);
-		}
+		it++;
 	}
-	return;
 }
+
+
 
 void Server::removeClientFromPollfd(int clientsock)
 {

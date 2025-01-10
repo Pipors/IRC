@@ -137,6 +137,8 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 						return;
 					}
 					channel->getClientFromChannelByName(arg)->setModerator(true);
+					msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +o " + arg + "\r\n";	
+
 					break;
 
 					// case 't':
@@ -153,7 +155,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 				{
 					case 'i':
 					channel->setInviteMode(false);
-					msg= standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + "-i\r\n";
+					msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " -i\r\n";
 					sendData(client->getClientSock(), msg.c_str());
 					break;
 
@@ -274,10 +276,10 @@ void Command::privmsgCommandChannel(const std::string &channelname, Client *clie
 	}
 	if (channel->getClientFromChannelByName(client->getNickName()) == NULL)
 	{
-		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
+		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 	}
-	const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + channelname + " " + tosend + "\r\n";
+	const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + tosend + "\r\n";
 	//Point to the channelClient vector in Channel
 	std::vector<Client>* otherClients = channel->getChannelClientsVector();
 	size_t i = 0;
@@ -302,7 +304,7 @@ void Command::privmsgCommandUser(Client *client, const std::string& tosend)
 	}
 	else 
 	{
-		const std::string& msg =  standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " PRIVMSG " + client->getNickName() + tosend + "\r\n";
+		const std::string& msg =  standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " PRIVMSG " +  + " " + tosend + "\r\n";
 		sendData(client->getClientSock(),  msg.c_str());
 		return ;
 	}
@@ -317,5 +319,19 @@ void Command::eligibiltyErr(Client *client, const std::string& msg)
 	return;
 }
 
+void Command::removeClientFromAllChannels(const int& toremove)
+{
+	std::vector<Channel>::iterator it = channels.begin();
 
-
+	while (it != channels.end())
+	{
+		std::vector<Client>::iterator c_it = it->getChannelClientsVector()->begin();
+		while (c_it != it->getChannelClientsVector()->end())
+		{
+			if (c_it->getClientSock() == toremove)
+				it->getChannelClientsVector()->erase(c_it);
+			c_it++;
+		}
+		it++;
+	}
+}

@@ -40,12 +40,14 @@ public :
 	/* FUCNTIONS HANDLING SENDING AND RECIEVING MSG */
 	void recieveData(int clienSock);
 	void parseCommand(int newsocket);
-	
+	void removeClientFromServer(int clientSock);
 
 	/* UTILS */
+	void removeClientFromChannel(Client *client, const std::string& name, const std::string& toremove);
+
 	static void signalHandler(int sig);
 	void throwError(const char* msg, int fd);
-	void removeClientFromServer(int clientsock);
+	// void removeClientFromServer(int clientsock);
 	void removeClientFromPollfd(int clientsock);
 	void closeFd();
 

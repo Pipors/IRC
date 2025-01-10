@@ -48,3 +48,16 @@
 #define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	("352 " + client + " " + channel + " " + username + " " + host + " " + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
 #define RPL_CHANNELMODEIS(client, channel, modes)										("324 " + client + " " + channel + " " + modes + "\r\n")
 #define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + creation_time + "\r\n")
+
+
+
+////////////////////
+//                //
+//     COLORS     //
+//                //
+////////////////////
+
+
+#define CYAN "\033[36m"
+#define BCYAN "\033[106m"
+#define ENDC "\033[0m"

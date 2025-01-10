@@ -38,7 +38,7 @@ public :
 	void 	privmsgCommandChannel(const std::string &, Client *, const std::string &);
 	void 	privmsgCommandUser(Client *, const std::string &);
 	void 	sendData(int, const std::string &);
-
+	void	removeClientFromAllChannels(const int& toremove);
 
 	std::string standardMsg(std::string, std::string, std::string);
 

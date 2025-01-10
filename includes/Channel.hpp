@@ -20,7 +20,7 @@ public :
 	void setInviteMode(const bool &);
 	void setPasswdRequired(const bool&);
 	void setPasswd(const std::string&);
-
+	void removeClientFromChannel(const std::string&);
 
 	bool channelIsFull();
 	bool userExist(const std::string &, int);
@@ -36,6 +36,23 @@ public :
 
 	size_t getChannelClientSize();
 	std::vector<Client> *getChannelClientsVector();
+
+	// template<typename T>
+	// Client *getClientFromChannelByT(const T& name)
+	// {
+	// 	std::vector<Channel>::iterator it = channels.begin();
+
+	// 	while(it != channels.end())
+	// 	{
+	// 		it->
+
+
+	// 		it++;
+	// 	}
+	// }
+
+
+
 
 	Client *getClientFromChannelByName(const std::string& name);
 

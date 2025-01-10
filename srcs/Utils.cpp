@@ -37,6 +37,7 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "USER") && client->isValid())
 		{
+			std::cout << "ASSAFAH\n";
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
 			client->setUserName(*(it + 1));
@@ -48,6 +49,8 @@ void Server::processCommand(Client* client, const char* message)
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
 			client->setNickName(*(it + 1));
+			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP NICK " + ":" + client->getNickName() + "\r\n";
+			command.sendData(client->getClientSock(), msg);		
 		}
 
 		if (equalStrings(*it, "JOIN") && client->isEligible())
@@ -58,10 +61,10 @@ void Server::processCommand(Client* client, const char* message)
 				return;
 			if (name[0] != '#' || name.size() == 1)
 			{
-				command.sendData(client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN"));
+				const std::string& msg = ":" + client->getNickName()+ "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
+				command.sendData(client->getClientSock(), msg);
 				return;
 			}
-			std::cout << command.channelExist(name) << "\n"; 
 			chan = command.getChannelByName(name);
 			if (chan != NULL)
 			{
@@ -87,13 +90,19 @@ void Server::processCommand(Client* client, const char* message)
 			const std::string& param = *(it + 1); 
 			if (param[0] == '#') // channel's name
 			{
-				command.privmsgCommandChannel(param, client, getRangeAsString(vec, it, vec.size(), " "));
+				if ((it + 2) != vec.end())
+					command.privmsgCommandChannel(param, client, getRangeAsString(vec, it + 2, vec.size(), " "));
+				else
+				{
+					const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + *(it + 1) + " " + ERR_NEEDMOREPARAMS(client->getNickName(), *it);
+					command.sendData(client->getClientSock(), msg);
+				}
 				return; //!!
 			}
 			else
 			{
 				Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
-				command.privmsgCommandUser(_client, getRangeAsString(vec, it, vec.size(), " "));
+				command.privmsgCommandUser(_client, getRangeAsString(vec, it + 2, vec.size(), " "));
 				return; //!!
 			}
 		}
@@ -101,21 +110,24 @@ void Server::processCommand(Client* client, const char* message)
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
 
-			if ( (it + 1) != vec.end() && (it + 2) != vec.end() && command.channelExist(*(it + 1)))
+			if ( ((it + 1) != vec.end() && (it + 2) != vec.end()) && command.channelExist(*(it + 1)))
 			{
-					if ((equalStrings(*(it + 2), "+k") || equalStrings(*(it + 2), "+i") || equalStrings(*(it + 2), "+l")) && (it + 3) != vec.end())
+					if ((equalStrings(*(it + 2), "+k") || equalStrings(*(it + 2), "+o") || equalStrings(*(it + 2), "+l")
+						|| equalStrings(*(it + 2), "-o") ) && (it + 3) != vec.end())
 						command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
-					command.modeCommand(client, *(it + 1), *(it + 2), NULL);
+					command.modeCommand(client, *(it + 1), *(it + 2), "NULL");
 			}
-			else
-			{
-				command.sendData(client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it));
-				return ;
-			}
+			return;
+			// else
+			// {
+			// 	command.sendData(client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it));
+			// 	return ;
+			// }
 		}
 
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 		{
+			command.removeClientFromAllChannels(client->getClientSock()); 
 			close(client->getClientSock());
 			return;
 		}

@@ -155,3 +155,13 @@ Client *Channel::getClientFromChannelByName(const std::string& name)
 	return NULL;
 }
 
+void Channel::removeClientFromChannel(const std::string& toremove)
+{
+	std::vector<Client>::iterator it = channelClients.begin();
+	while (it != channelClients.end())
+	{
+		if (it->getNickName() == toremove)
+			channelClients.erase(it);
+		it++;
+	}
+}

@@ -3,13 +3,13 @@
 #include <unistd.h>
 
 
-Channel::Channel() : requirePasswd(false), inviteMode(0), channelLimit(10) ,channelName("")
+Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName("")
 {
 
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), channelLimit(10) ,channelName(_channelName), channelPasswd(""), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0)
 {
 
 }
@@ -80,7 +80,7 @@ std::string Channel::getCurrentTimestamp()
 
 bool Channel::channelIsFull()
 {
-	return (this->channelLimit == channelClients.size() ? true : false);
+	return (channelClients.size() == this->channelLimit ? true : false);
 }
 
 bool Channel::userExist(const std::string &name, int nb)
@@ -135,12 +135,10 @@ size_t Channel::getChannelClientSize()
 	return this->channelClients.size();
 }
 
-void Channel::resizeClientVector(const size_t& i)
+void Channel::resizeClientLimit(const size_t& i)
 {
-	if (i < channelClients.size())
+	if (i >= channelClients.size())
 		this->channelLimit = i;
-	channelClients.resize(channelLimit);
-	return;
 }
 
 Client *Channel::getClientFromChannelByName(const std::string& name)
@@ -164,4 +162,25 @@ void Channel::removeClientFromChannel(const std::string& toremove)
 			channelClients.erase(it);
 		it++;
 	}
+}
+
+
+void Channel::setChannelLimit(const size_t& limit)
+{
+	this->channelLimit = limit;
+}
+
+
+size_t Channel::getChannelLimit() const
+{
+	return this->channelLimit;
+}
+
+void Channel::setTopicMode(const bool& val)
+{
+	this->topicMode = val;
+}
+bool Channel::getTopicMode() const
+{
+	return this->topicMode;
 }

@@ -346,7 +346,8 @@ void Server::notCommand(const std::string& str)
 		&& str != "USER"
 		&& str != "KICK"
 		&& str != "PRIVMSG"
-		&& str != "PART")
+		&& str != "PART"
+		&& str != "WHO")
 		return;
 }
 

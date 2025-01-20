@@ -184,3 +184,8 @@ bool Channel::getTopicMode() const
 {
 	return this->topicMode;
 }
+
+// void Channel::addClientToVector(Client client)
+// {
+// 	this->getChannelClientsVector()->push_back(client);
+// }

@@ -86,6 +86,7 @@ private	:
 	static bool running;
 	std::vector<struct pollfd> monitor;
 	std::vector<Client> clients;            // Storing the clients who successfully establishde a connection wiht the server
+	std::vector<Client> invitee;            // Storing the clients who successfully establishde a connection wiht the server
 	Command command;
 
 };

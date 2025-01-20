@@ -105,6 +105,8 @@ void Server::processCommand(Client* client, const char* message)
 			}
 		}
 
+		
+
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
 			if ((it + 2) == vec.end())
@@ -128,6 +130,82 @@ void Server::processCommand(Client* client, const char* message)
 			return;
 		}
 
+		if(equalStrings(*it, "INVITE") && client->isEligible())
+		{
+			// std::cout << *(it + 1) << "\n";
+			// std::cout << *(it + 2) << "\n";
+			// if (it != vec.end() && ((it + 1) == vec.end() || (it + 2) == vec.end()))
+			// {
+			// 	const std::string &msg = ":IRC " + ERR_NEEDMOREPARAMS(client->getNickName(), *(it));
+			// 	send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			// 	return ;
+			// }
+
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)) 
+				|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+			{
+				return ;
+			}
+
+			if (getClientFromServer(*(it + 1)) != NULL)
+			{
+				Client *invitedClient = getClientFromServer(*(it + 1));
+				if (!command.channelExist(*(it + 2)))
+				{
+					const std::string &msg = ":IRC " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 2));
+					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+					return ;
+				}
+				if(client->isModerator() != true)
+				{
+					const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
+					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+					return ;
+				}
+				int check;
+				check = command.inviteclientcheck(invitedClient, *(it + 2));
+				if(check == 3)
+				{
+					const std::string &msg = ":IRC " + ERR_USERONCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
+					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+					return;
+				}
+
+				command.getChannelByName(*(it + 2))->AddUser2Channel(invitedClient);
+				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
+				command.sendData(invitedClient->getClientSock(), msg);
+
+				// std::cout << "T33333333\n"; 
+				const std::string& name = command.getChannelByName(*(it + 2))->getChannelName();
+				const std::string& ms = command.standardMsg(invitedClient->getNickName(), invitedClient->getUserName(), invitedClient->getIpAddress()) + " JOIN " + name + " * " + invitedClient->getRealName() + " " + RPL_WELCOME(invitedClient->getNickName(), "IRC");
+
+				command.sendData(invitedClient->getClientSock(), ms);
+				return;
+			}
+			else
+			{
+				const std::string &msg = ":IRC " + ERR_NOSUCHNICK(client->getNickName(), *(it + 1));
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return;
+				return;
+			}
+			return;
+
+		}
+		if(equalStrings(*it, "KICK") )
+		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)) 
+				|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+			{
+				return ;
+			}
+			command.kickCommand(client, vec, it);
+			Client *kickedClient = getClientFromServer(*(it + 2));
+			const std::string &msg = command.standardMsg(kickedClient->getNickName(), kickedClient->getUserName(), kickedClient->getIpAddress()) + " KICK " + *(it+1) + " * " + kickedClient->getRealName() + " :Kicked by " + client->getNickName() + "\r\n";
+			command.sendData(kickedClient->getClientSock(), msg);
+			return;
+
+		}
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 		{
 			command.removeClientFromAllChannels(client->getClientSock()); 

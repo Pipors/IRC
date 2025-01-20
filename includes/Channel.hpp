@@ -23,12 +23,14 @@ public :
 	void setPasswdRequired(const bool&);
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
+	void addClientToVector(Client);
 
 	bool channelIsFull();
 	bool userExist(const std::string &, int);
 	bool getInviteMode();
 	bool channelInviteModeOnly();
 	bool getPasswdRequired() const;
+				// command.getChannelByName(*(it + 1))->addClientToVector(invitedClient);
 	bool getTopicMode() const;
 
 	std::string getChannelName() const;

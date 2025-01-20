@@ -49,6 +49,14 @@ public :
 
 	Channel	*getChannelByName(const std::string &);
 
+	int	 inviteclientcheck(Client* client, std::string const &name);
+	void kickCommand(Client *client, std::vector<std::string> vec, std::vector<std::string>::iterator it);
+	int  clientinthechannel(std::string const &chaine, std::string const &name);
+	int	 userinthechannel(Client* client, std::string const &name, std::string const &usname);
+	int 	kickClientFromChannel(const std::string &chaine, const std::string& toremove);
+	void inputClient(Client *client, std:: string name);
+	void sendToAll(Client *client,const std::string msg, std::string name);
+
 private :
 	std::string commandLine;
 	std::string parameter1;

@@ -259,6 +259,7 @@ std::string Server::getName() const
 
 std::vector<std::string> Server::getWords_(const std::string &str)
 {
+
 	std::vector<std::string> words;
 	std::istringstream stream(str);
 	std::string word;
@@ -313,6 +314,7 @@ Client *Server::getClientFromServer(const std::string& nickname)
 	{
 		if (clients[i].getNickName() == nickname)
 			return &(clients[i]);
+		i++;
 	}
 	return NULL;
 }

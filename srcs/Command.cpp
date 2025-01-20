@@ -207,7 +207,6 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 
 void Command::joinCommand(Client *client, const std::string &param, const std::string& passwd)
 {
-
 	if (channelExist(param) == false)
 	{
 		Channel newChannel(param);
@@ -356,4 +355,134 @@ void Command::removeClientFromAllChannels(const int& toremove)
 		}
 		it++;
 	}
+}
+
+void Command::kickCommand(Client *client, std::vector<std::string> vec, std::vector<std::string>::iterator it)
+{
+	(void )vec;
+	if(!channelExist(*(it + 1)))
+	{
+		const std::string &msg = ":IRC " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 1));
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return ;
+	}
+
+	if(client->isModerator() != true)
+	{
+			const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			return ;
+	}
+	int j = clientinthechannel(*(it+1), *(it+2));
+	if(j != 0)
+	{
+			std::cout << "here1111\n";
+			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			return ;
+	}
+	int h = userinthechannel(client, *(it + 1), *(it + 2));
+		if(h == 3)
+		{
+			std::cout << "here222222\n";
+			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			return ;
+		}
+		if(h == 2)
+		{
+			const std::string &msg = ": IRC : Client Can't kick himself \n";
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			return;	
+		}
+		int k = kickClientFromChannel(*(it + 1), *(it + 2));
+		if (k != 0)
+		{
+			const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), (*(it + 1)));
+			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			return ;
+		}
+		const std::string &msg = ": IRC : Client kicked successfully \n";
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return;
+
+}
+
+int Command::kickClientFromChannel(const std::string &chaine, const std::string& toremove)
+{
+	Channel *channel = getChannelByName(chaine);
+	if(!channel)
+		return 1;
+	channel->removeClientFromChannel(toremove);
+		return 0;
+}
+int Command::userinthechannel(Client* client, std::string const &name, std::string const &usname)
+{
+	// int i = 0;
+	(void)client;
+	if(client->getNickName() == usname)
+		return 2;
+	Channel *channel = getChannelByName(name);
+	if(!channel)
+		return 1;
+	std::vector<Client>* vec = channel->getChannelClientsVector();
+
+	for (std::vector<Client>::iterator ite = vec->begin(); ite != vec->end(); ++ite) 
+    {
+        if (usname == ite->getNickName())
+            return 0;
+    }
+	return 3;
+	// command.getChannelByName(name)->userInChannel(client->getclinetByName())
+}
+int Command::clientinthechannel(std::string const &chaine, std::string const &name)
+{
+	Channel *channel = getChannelByName(chaine);
+	if(!channel)
+		return 1;
+	std::vector<Client>* vec = channel->getChannelClientsVector();
+
+	for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); ++it) 
+    {
+        if (name == it->getNickName())
+            return 0;
+    }
+	return 3;
+}
+int Command::inviteclientcheck(Client* client, std::string const &name)
+{
+	Channel *channel = getChannelByName(name);
+	if(!channel)
+		return 1;
+	// if(channel->getInviteMode() == false)
+	// 	return 2;
+	std::vector<Client>* vec = channel->getChannelClientsVector();
+
+	for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); ++it) 
+    {
+        if (client->getNickName() == it->getNickName())
+            return 3;
+    }
+	return 0;
+
+}
+void Command::inputClient(Client *client, std:: string name)
+{
+	Channel *channel = getChannelByName(name);
+	std::vector<Client>* vec = channel->getChannelClientsVector();
+	vec->push_back(*client);
+}
+void Command::sendToAll(Client *client,const std::string msg, std::string name)
+{
+	Channel *channel = getChannelByName(name);
+	std::vector<Client>* otherClients = channel->getChannelClientsVector();
+	size_t i = 0;
+	while (i < otherClients->size())
+	{
+		int fd = (*otherClients)[i].getClientSock();
+		if (client->getClientSock() != fd)
+			send(fd, msg.c_str(), msg.size(), 0);
+		i++;
+	}
+	// std::cout << "l7wa" << std::endl;
 }

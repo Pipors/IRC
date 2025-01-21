@@ -16,7 +16,7 @@ public :
 	~Channel();
 
 	void AddUser2Channel(Client*);
-	void removeClientFromChannel(const std::string&);
+	void removeClientFromChannel(const Client&);
 	void resizeClientLimit(const size_t&);  //set Channel limit
 	void setChannelLimit(const size_t&);
 	void setInviteMode(const bool &);
@@ -24,6 +24,7 @@ public :
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
 	void addClientToVector(Client);
+	Client *kickedCLientExistence(const std::string& clientName);
 
 	bool channelIsFull();
 	bool userExist(const std::string &, int);

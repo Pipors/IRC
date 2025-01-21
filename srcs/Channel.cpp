@@ -148,18 +148,21 @@ Client *Channel::getClientFromChannelByName(const std::string& name)
 	{
 		if (channelClients[i].getNickName() == name)
 			return &(channelClients[i]);
-		i++;	
+		i++;
 	}
 	return NULL;
 }
 
-void Channel::removeClientFromChannel(const std::string& toremove)
+void Channel::removeClientFromChannel(const Client& client)
 {
 	std::vector<Client>::iterator it = channelClients.begin();
 	while (it != channelClients.end())
 	{
-		if (it->getNickName() == toremove)
+		if (it->getNickName() == client.getNickName())
+		{
 			channelClients.erase(it);
+			return;
+		}
 		it++;
 	}
 }
@@ -188,4 +191,16 @@ bool Channel::getTopicMode() const
 // void Channel::addClientToVector(Client client)
 // {
 // 	this->getChannelClientsVector()->push_back(client);
+// }
+
+// Client* Channel::kickedCLientExistence(const std::string &clientName)
+// {
+// 	// std::vector<Client>::iterator it = channelClients.begin();
+// 	while(i < =)
+// 	{
+// 		if(it->getNickName() == clientName)
+// 			return &Client;
+// 		it++;
+// 	}
+// 	return NULL;
 // }

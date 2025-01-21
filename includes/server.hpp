@@ -37,6 +37,7 @@ public :
 	void processCommand(Client *, const char* message);
 
 	bool equalStrings(const std::string& it, const std::string& compare);
+	bool nickNameInUse(Client *, const std::string&);
 	/* FUCNTIONS HANDLING SENDING AND RECIEVING MSG */
 	void recieveData(int clienSock);
 	void parseCommand(int newsocket);

@@ -23,10 +23,10 @@ public :
 	void setPasswdRequired(const bool&);
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
-	void addClientToVector(Client);
 
+	bool userExistInChannelBySock(const int&);
 	bool channelIsFull();
-	bool userExist(const std::string &, int);
+	bool userExistInChannelByName(const std::string &, const int&);
 	bool getInviteMode();
 	bool channelInviteModeOnly();
 	bool getPasswdRequired() const;
@@ -42,21 +42,6 @@ public :
 	size_t getChannelClientSize();
 	
 	std::vector<Client> *getChannelClientsVector();
-
-	// template<typename T>
-	// Client *getClientFromChannelByT(const T& name)
-	// {
-	// 	std::vector<Channel>::iterator it = channels.begin();
-
-	// 	while(it != channels.end())
-	// 	{
-	// 		it->
-
-
-	// 		it++;
-	// 	}
-	// }
-
 
 
 

@@ -83,7 +83,7 @@ bool Channel::channelIsFull()
 	return (channelClients.size() == this->channelLimit ? true : false);
 }
 
-bool Channel::userExist(const std::string &name, int nb)
+bool Channel::userExistInChannelByName(const std::string &name, const int& nb)
 {
 	std::vector<Client>::iterator it = channelClients.begin();
 
@@ -91,9 +91,22 @@ bool Channel::userExist(const std::string &name, int nb)
 	{
 		if (it->getClientSock() != nb)
 		{
-			if (it->getNickName() == name || it->getUserName() == name)
+			if (it->getNickName() == name)
 				return true;
 		}
+		it++;
+	}
+	return false;
+}
+
+bool Channel::userExistInChannelBySock(const int& nb)
+{
+	std::vector<Client>::iterator it = channelClients.begin();
+
+	while (it != channelClients.end())
+	{
+		if (it->getClientSock() == nb)
+			return true;
 		it++;
 	}
 	return false;

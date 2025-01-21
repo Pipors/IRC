@@ -364,3 +364,18 @@ bool Server::emptyParam(const std::vector<std::string>& vec, const std::vector<s
 	return false;
 }
 
+bool Server::nickNameInUse(Client *client, const std::string& name)
+{
+	std::vector<Client>::iterator it = clients.begin();
+
+	while (it != clients.end())
+	{
+		if (it->getClientSock() != client->getClientSock())
+		{
+			if (strncmp(it->getNickName().c_str(), name.c_str(), name.size()) == 0)
+				return true;
+		}
+		it++;
+	}
+	return false;
+}

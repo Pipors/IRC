@@ -1,4 +1,4 @@
-CXX = @c++
+CXX = c++
 
 CXXFLAGS = -Wall -Wextra -Werror -fsanitize=address -std=c++98
 LDFLAGS = -fsanitize=address

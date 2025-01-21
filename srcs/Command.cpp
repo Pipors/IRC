@@ -48,6 +48,8 @@ bool Command::channelExist(const std::string& name)
 }
 
 
+
+
 std::vector<Channel> Command::getChannelVector() const
 {
 	return this->channels;
@@ -75,6 +77,20 @@ std::string Command::standardMsg(std::string nick, std::string user, std::string
 }
 
 
+bool Command::invalidNickName(const std::string& nick)
+{
+	size_t i = 0; 
+	while (i <= nick.size())
+	{
+		if (nick[i] == ' ' || nick[i] == ',' || nick[i] == '@'
+			|| nick[i] == '#' || nick[i] == '?' || nick[i] == '!'
+			|| nick[i] == ':' || nick[i] == '.' || nick[i] == '*' || nick.size() == 1)
+			return true;
+		i++;
+	}
+	return false;
+}
+
 
 void Command::modeCommand(Client *client, const std::string&target, const std::string& modestring, const std::string& arg) // modestring is the word after the channel name "target" : +/-i,t,l,o,k
 {
@@ -94,7 +110,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 	if (!modestring.empty())
 	{
 		size_t i = 0;
-		std::string msg = "9alwa";
+		std::string msg = "";
 		const std::string& test = modestring.substr(1);
 		switch (modestring[0])
 		{
@@ -217,17 +233,24 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 		const std::string& msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " JOIN " + param + " * :" + client->getRealName() + "\r\n";
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 	}
-	else if (channelExist(param) == true)
+	else if (channelExist(param))
 	{
 		Channel *channel = getChannelByName(param);
+
 		if (channel == NULL)
 			return; //!!
 
-		if (channel->userExist(client->getNickName(), client->getClientSock())
-			|| channel->userExist(client->getUserName(), client->getClientSock()))
+		if (channel->userExistInChannelByName(client->getNickName(), client->getClientSock()))
 		{
 			const std::string& msg = ":IRC " + ERR_NICKNAMEINUSE(client->getNickName(), client->getNickName());
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			sendData(client->getClientSock(), msg);
+			return ; //!!
+		}
+
+		if (channel->userExistInChannelBySock(client->getClientSock()))
+		{
+			const std::string& msg = "IRC :You are already a member of " + channel->getChannelName() + "\r\n";
+			sendData(client->getClientSock(), msg);
 			return ; //!!
 		}
 
@@ -287,18 +310,23 @@ Channel *Command::getChannelByName(const std::string& name)
 // forward the message to all clients added to this channel
 void Command::privmsgCommandChannel(const std::string &channelname, Client *client, const std::string& tosend)
 {
-	eligibiltyErr(client, "");
+	// eligibiltyErr(client, "");
 	//Point to the channel in where the message were sent
 	Channel *channel = getChannelByName(channelname);
 	if (channel == NULL)
 	{
-		sendData(client->getClientSock(), ERR_NOSUCHCHANNEL(client->getNickName(), channelname));
+		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_NOSUCHCHANNEL(client->getNickName(), channelname);
+		sendData(client->getClientSock(), msg);
 		return ;
 	}
-	if (channel->getClientFromChannelByName(client->getNickName()) == NULL)
+	
+	//Point to the client whom sent the message
+	Client *_client = channel->getClientFromChannelByName(client->getNickName());
+	if ( _client == NULL)
 	{
-		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
-		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		const std::string& msg =  ":" + _client->getNickName() + "!" + _client->getUserName() + "@" + _client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(_client->getNickName(), _client->getNickName(), channel->getChannelName());
+		sendData(_client->getClientSock(), msg);
+		return ;
 	}
 	const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + tosend + "\r\n";
 	//Point to the channelClient vector in Channel
@@ -314,21 +342,18 @@ void Command::privmsgCommandChannel(const std::string &channelname, Client *clie
 }
 // The message is send to a user
 // look for the user by his nickname and send the msg to him
-void Command::privmsgCommandUser(Client *client, const std::string& tosend)
+void Command::privmsgCommandUser(Client *sender, Client *client, const std::string& tosend)
 {
-	eligibiltyErr(client, "");
-	if (!client)
-	{
-		const std::string& msg = ":IRC" + ERR_NOSUCHNICK(client->getNickName(), client->getNickName());
-		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-		return ;
-	}
-	else 
-	{
-		const std::string& msg =  standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " PRIVMSG " +  + " " + tosend + "\r\n";
-		sendData(client->getClientSock(),  msg.c_str());
-		return ;
-	}
+	// eligibiltyErr(client, "");
+	// if (!client)
+	// {
+	// 	const std::string& msg = ":IRC" + ERR_NOSUCHNICK(client->getNickName(), client->getNickName());
+	// 	send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+	// 	return ;
+	// }
+	const std::string& msg =  standardMsg(sender->getNickName(), sender->getUserName(), sender->getIpAddress()) + " PRIVMSG " + client->getNickName() + " " + tosend + "\r\n";
+	sendData(client->getClientSock(),  msg.c_str());
+	return ;
 }
 
 
@@ -369,42 +394,42 @@ void Command::kickCommand(Client *client, std::vector<std::string> vec, std::vec
 
 	if(client->isModerator() != true)
 	{
-			const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			return ;
+		const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return ;
 	}
 	int j = clientinthechannel(*(it+1), *(it+2));
 	if(j != 0)
 	{
-			std::cout << "here1111\n";
-			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			return ;
+		std::cout << "here1111\n";
+		const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return ;
 	}
 	int h = userinthechannel(client, *(it + 1), *(it + 2));
-		if(h == 3)
-		{
-			std::cout << "here222222\n";
-			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			return ;
-		}
-		if(h == 2)
-		{
-			const std::string &msg = ": IRC : Client Can't kick himself \n";
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			return;	
-		}
-		int k = kickClientFromChannel(*(it + 1), *(it + 2));
-		if (k != 0)
-		{
-			const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), (*(it + 1)));
-			send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			return ;
-		}
-		const std::string &msg = ": IRC : Client kicked successfully \n";
+	if(h == 3)
+	{
+		std::cout << "here222222\n";
+		const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-		return;
+		return ;
+	}
+	if(h == 2)
+	{
+		const std::string &msg = ": IRC : Client Can't kick himself \n";
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return;	
+	}
+	int k = kickClientFromChannel(*(it + 1), *(it + 2));
+	if (k != 0)
+	{
+		const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), (*(it + 1)));
+		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		return ;
+	}
+	const std::string &msg = ": IRC : Client kicked successfully \n";
+	send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+	return;
 
 }
 

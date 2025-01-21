@@ -42,6 +42,19 @@ void Server::processCommand(Client* client, const char* message)
 		{
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
+
+			if (nickNameInUse(client, *(it + 1)))
+			{
+				const std::string &msg = "IRC :" + ERR_NICKNAMEINUSE(client->getNickName(), *(it + 1));
+				command.sendData(client->getClientSock(), msg);
+				return;
+			}
+			if (command.invalidNickName(*(it + 1)))
+			{
+				const std::string &msg = "IRC :" + ERR_BADNICKNAME(*(it + 1));
+				command.sendData(client->getClientSock(), msg);
+				return;
+			}
 			client->setNickName(*(it + 1));
 			const std::string& msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " NICK " + ":" + client->getNickName() + "\r\n";
 			command.sendData(client->getClientSock(), msg);		
@@ -80,9 +93,16 @@ void Server::processCommand(Client* client, const char* message)
 				return;
 				
 			const std::string& param = *(it + 1); 
-			if (param[0] == '#') // channel's name
+			if (param.size() <= 1)
 			{
-				if ((it + 2) != vec.end())
+				const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + *(it + 1) + " " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 1));
+				command.sendData(client->getClientSock(), msg);
+				return; //!!
+			}
+
+			if (param[0] == '#' && command.getChannelByName(*(it + 1))->getClientFromChannelByName(client->getNickName()) != NULL) // channel's name
+			{
+				if ((it + 2) != vec.end() )
 					command.privmsgCommandChannel(param, client, getRangeAsString(vec, it + 2, vec.size(), " "));
 				else
 				{
@@ -94,8 +114,8 @@ void Server::processCommand(Client* client, const char* message)
 			Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
 			if(_client != NULL)
 			{
-			
-				command.privmsgCommandUser(_client, getRangeAsString(vec, it + 2, vec.size(), " "));
+				std::cout << "sock ->" << _client->getClientSock() << "\n";
+				command.privmsgCommandUser(client, _client, getRangeAsString(vec, it + 2, vec.size(), " "));
 				return; //!!
 			}
 			else
@@ -105,7 +125,9 @@ void Server::processCommand(Client* client, const char* message)
 			}
 		}
 
-		
+		/* I should check if the client is trying to join a channel, where he is already a member in */
+		/* To do so i should search in the client vector of that channel and see if the number of the client's sock is aready there
+			*/
 
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
@@ -175,7 +197,7 @@ void Server::processCommand(Client* client, const char* message)
 				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
 				command.sendData(invitedClient->getClientSock(), msg);
 
-				// std::cout << "T33333333\n"; 
+
 				const std::string& name = command.getChannelByName(*(it + 2))->getChannelName();
 				const std::string& ms = command.standardMsg(invitedClient->getNickName(), invitedClient->getUserName(), invitedClient->getIpAddress()) + " JOIN " + name + " * " + invitedClient->getRealName() + " " + RPL_WELCOME(invitedClient->getNickName(), "IRC");
 

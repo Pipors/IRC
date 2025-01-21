@@ -1,9 +1,9 @@
 #pragma once
 #define CRLF "\r\n"
-#
+
 #define ERR_FUNCSEND "FATAL : send() Failed!"
 #include <iostream>
-#include <cstring>
+#include <cstring> 
 #include <sys/socket.h>
 // #include <sys/type.h>
 #include <arpa/inet.h>
@@ -28,35 +28,34 @@ public :
 
 	
 	bool channelExist(const std::string &);
-	
-	
+	bool invalidNickName(const std::string&);
+
 
 	void	eligibiltyErr(Client *, const std::string&); //processing the returned value of isEligible() function
+	void	inputClient(Client *client, std:: string name);
 	void 	joinCommand(Client *, const std::string &, const std::string&);
+	void	kickCommand(Client *client, std::vector<std::string> vec, std::vector<std::string>::iterator it);
 	void 	modeCommand(Client *,const std::string &, const std::string &, const std::string &);
 	void 	passCommand(Client *, const std::string &, const std::string &);
 	void 	privmsgCommandChannel(const std::string &, Client *, const std::string &);
-	void 	privmsgCommandUser(Client *, const std::string &);
-	void 	sendData(int, const std::string &);
+	void 	privmsgCommandUser(Client *, Client *, const std::string &);
 	void	removeClientFromAllChannels(const int& toremove);
+	void 	sendData(int, const std::string &);
+	void	sendToAll(Client *client,const std::string msg, std::string name);
 
-	std::string standardMsg(std::string, std::string, std::string);
+
+	int	clientinthechannel(std::string const &chaine, std::string const &name);
+	int	inviteclientcheck(Client* client, std::string const &name);
+	int	kickClientFromChannel(const std::string &chaine, const std::string& toremove);
+	int	userinthechannel(Client* client, std::string const &name, std::string const &usname);
 
 
-	std::vector<Channel> 	 getChannelVector() const;
-	std::vector<std::string> getWords(const std::string &);
+	std::string					standardMsg(std::string, std::string, std::string);
+	std::vector<Channel>		getChannelVector() const;
+	std::vector<std::string>	getWords(const std::string &);
 
 
 	Channel	*getChannelByName(const std::string &);
-
-	int	 inviteclientcheck(Client* client, std::string const &name);
-	void kickCommand(Client *client, std::vector<std::string> vec, std::vector<std::string>::iterator it);
-	int  clientinthechannel(std::string const &chaine, std::string const &name);
-	int	 userinthechannel(Client* client, std::string const &name, std::string const &usname);
-	int 	kickClientFromChannel(const std::string &chaine, const std::string& toremove);
-	void inputClient(Client *client, std:: string name);
-	void sendToAll(Client *client,const std::string msg, std::string name);
-
 private :
 	std::string commandLine;
 	std::string parameter1;

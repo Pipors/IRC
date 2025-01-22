@@ -44,7 +44,7 @@ public :
 	void	sendToAll(Client *client,const std::string msg, std::string name);
 
 	int	 inviteclientcheck(Client* client, std::string const &name);
-	void kickCommand(Client *client, const std::string&, const std::string&);
+	void kickCommand(Client *client,  const std::string& channelName, const std::string& clientName, Client *clientToKick, std::string m);
 	int  clientinthechannel(std::string const &chaine, std::string const &name);
 	int	 userinthechannel(Client* client, std::string const &name, std::string const &usname);
 	int kickClientFromChannel(const std::string &chaine,Client *client);

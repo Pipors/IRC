@@ -89,7 +89,8 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "PRIVMSG") && client->isEligible())
 		{
-			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it))
+				|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
 				
 			const std::string& param = *(it + 1); 

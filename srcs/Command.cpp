@@ -311,14 +311,21 @@ Channel *Command::getChannelByName(const std::string& name)
 void Command::privmsgCommandChannel(const std::string &channelname, Client *client, const std::string& tosend)
 {
 	// eligibiltyErr(client, "");
+
 	//Point to the channel in where the message were sent
 	Channel *channel = getChannelByName(channelname);
-	if (channel == NULL)
+	if (channel == NULL || channel->getClientFromChannelByName(client->getNickName()) == NULL)
 	{
 		const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_NOSUCHCHANNEL(client->getNickName(), channelname);
 		sendData(client->getClientSock(), msg);
 		return ;
 	}
+	// if ()
+	// {
+	// 	const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PRIVMSG " + channelname + " " + ERR_USERNOTINCHANNEL(client->getNickName(), channelname);
+	// 	sendData(client->getClientSock(), msg);
+	// 	return ;
+	// }
 	
 	//Point to the client whom sent the message
 	Client *_client = channel->getClientFromChannelByName(client->getNickName());

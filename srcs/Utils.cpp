@@ -91,8 +91,8 @@ void Server::processCommand(Client* client, const char* message)
 		{
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return;
-				
-			const std::string& param = *(it + 1); 
+			
+			const std::string& param = *(it + 1);
 			if (param.size() <= 1)
 			{
 				const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + *(it + 1) + " " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 1));
@@ -100,10 +100,15 @@ void Server::processCommand(Client* client, const char* message)
 				return; //!!
 			}
 
-			if (param[0] == '#' && command.getChannelByName(*(it + 1))->getClientFromChannelByName(client->getNickName()) != NULL) // channel's name
+			if (param[0] == '#') // channel's name
 			{
-				if ((it + 2) != vec.end() )
+				if ((it + 2) != vec.end() && command.getChannelByName(param) != NULL)
 					command.privmsgCommandChannel(param, client, getRangeAsString(vec, it + 2, vec.size(), " "));
+				else if (command.getChannelByName(param) == NULL)
+				{
+					const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + *(it + 1) + " " + ERR_NOSUCHCHANNEL(client->getNickName(), param);
+					command.sendData(client->getClientSock(), msg);
+				}
 				else
 				{
 					const std::string& msg =  ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP PRIVMSG " + *(it + 1) + " " + ERR_NEEDMOREPARAMS(client->getNickName(), *it);
@@ -114,8 +119,11 @@ void Server::processCommand(Client* client, const char* message)
 			Client *_client = getClientFromServer(param);               //client to whom the msg will be sent
 			if(_client != NULL)
 			{
+				if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it))
+					|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				std::cout << "sock ->" << _client->getClientSock() << "\n";
-				command.privmsgCommandUser(client, _client, getRangeAsString(vec, it + 2, vec.size(), " "));
+				if (getRangeAsString(vec, it + 2, vec.size(), " ").size() > 0)
+					command.privmsgCommandUser(client, _client, getRangeAsString(vec, it + 2, vec.size(), " "));
 				return; //!!
 			}
 			else

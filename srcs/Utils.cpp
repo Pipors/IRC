@@ -221,10 +221,15 @@ void Server::processCommand(Client* client, const char* message)
 			{
 				return ;
 			}
-			command.kickCommand(client, vec, it);
+			// if (command.getChannelByName(*(it + 1))->)
+			command.kickCommand(client, *(it + 1), *(it + 2));
 			Client *kickedClient = getClientFromServer(*(it + 2));
-			const std::string &msg = command.standardMsg(kickedClient->getNickName(), kickedClient->getUserName(), kickedClient->getIpAddress()) + " KICK " + *(it+1) + " * " + kickedClient->getRealName() + " :Kicked by " + client->getNickName() + "\r\n";
-			command.sendData(kickedClient->getClientSock(), msg);
+			if(!kickedClient)
+			{
+			std::cout << "noooooooo11111111\n";
+			return;}	
+			// const std::string &msg = command.standardMsg(kickedClient->getNickName(), kickedClient->getUserName(), kickedClient->getIpAddress()) + " KICK " + *(it+1) + " * " + kickedClient->getRealName() + " :Kicked by " + client->getNickName() + "\r\n";
+			// command.sendData(kickedClient->getClientSock(), msg);
 			return;
 
 		}

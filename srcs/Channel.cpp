@@ -166,16 +166,20 @@ Client *Channel::getClientFromChannelByName(const std::string& name)
 	return NULL;
 }
 
-void Channel::removeClientFromChannel(const std::string& toremove)
+void Channel::removeClientFromChannel(const Client& client)
 {
 	std::vector<Client>::iterator it = channelClients.begin();
 	while (it != channelClients.end())
 	{
-		if (it->getNickName() == toremove)
+		if (it->getNickName() == client.getNickName())
+		{
 			channelClients.erase(it);
+			return;
+		}
 		it++;
 	}
 }
+
 
 
 void Channel::setChannelLimit(const size_t& limit)

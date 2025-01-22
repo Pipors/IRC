@@ -16,7 +16,7 @@ public :
 	~Channel();
 
 	void AddUser2Channel(Client*);
-	void removeClientFromChannel(const std::string&);
+	void removeClientFromChannel(const Client& client);
 	void resizeClientLimit(const size_t&);  //set Channel limit
 	void setChannelLimit(const size_t&);
 	void setInviteMode(const bool &);

@@ -229,19 +229,21 @@ void Server::processCommand(Client* client, const char* message)
 			{
 				return ;
 			}
-			Client *kickedClient = getClientFromServer(*(it + 2));
-			if(!kickedClient)
-			{
-			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 2), *(it + 1));
-			command.sendData(client->getClientSock(), msg);
-			return ;
-			}
+			std::cout <<"channel::" <<*(it+1) << std::endl;
+			std::cout <<"nick ::" << *(it+2) << std::endl;
+			// while(1);
+			// Client *kickedClient = getClientFromServer(*(it + 2));
+			Client kickedClient = *(command.getChannelByName(*(it+1))->getClientFromChannelByName(*(it + 2)));
+			std::cout << "kkkkkkkkkkk\n";
+			// std::cout << kickedClient->getNickName() << "nickanem\n";
+			std::cout << "1" << std::endl;
 			 std::string m = " ";
 			if(it + 3 != vec.end())
 				m = getRangeAsString(vec, it, vec.size(), " ");
 			else
 				m = "NO REASON INCLUDED... ";
-			command.kickCommand(client, *(it + 1), *(it + 2), kickedClient, m);
+			command.kickCommand(client, *(it + 1), *(it + 2), &kickedClient, m);
+			
 			return;
 
 		}

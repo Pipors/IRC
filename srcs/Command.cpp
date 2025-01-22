@@ -391,7 +391,8 @@ void Command::removeClientFromAllChannels(const int& toremove)
 
 void Command::kickCommand(Client *client,  const std::string& channelName, const std::string& clientName, Client *clientToKick, std::string m)
 {
-	(void)client;
+	// while(1);
+	// (void)client;
 	Channel *channel = getChannelByName(channelName);
 	if(!channel)
 	{
@@ -399,28 +400,34 @@ void Command::kickCommand(Client *client,  const std::string& channelName, const
 		sendData(client->getClientSock(), msg.c_str());
 		return ;
 	}
-
+	std::cout << "hnaaaaaa\n";
 	// Client *clientokick = channel->getClientFromChannelByName(clientName);
 	std::cout << channel->getChannelName() << std::endl;
 	if(!clientToKick)
 	{
-			const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), clientName, channelName);
-			sendData(client->getClientSock(), msg);
-			return ;
+		const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), clientName, channelName)  ;
+		sendData(client->getClientSock(), msg);
+		return ;
 	}
+	std::cout << "2\n";
 	if(client->isModerator() != true)
 	{
 		const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), channelName);
 		sendData(client->getClientSock(), msg);
 		return ;
 	}
+	std::cout << "3\n";
 	int j = clientinthechannel(channelName, clientName);
+	std::cout << "4\n";
+
 	if(j == 3)
 	{
 			const std::string  &msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ERR_USERNOTINCHANNEL(client->getNickName(), clientName, channelName);
 			sendData(client->getClientSock(), msg);
 			return ;
 	}
+	std::cout << "5\n";
+
 	int h = userinthechannel(client, channelName, clientName);
 		if(h == 3)
 		{
@@ -428,24 +435,36 @@ void Command::kickCommand(Client *client,  const std::string& channelName, const
 			sendData(client->getClientSock(), msg);
 			return ;
 		}
+	std::cout << "6\n";
 		if(h == 2)
 		{
 			const std::string &msg = ": IRC : Client Can't kick himself \n";
 			sendData(client->getClientSock(), msg);
 			return;	
 		}
+	std::cout << "8\n";
+
 		int k = kickClientFromChannel(channelName,clientToKick);
+	std::cout << "9\n";
+	
 		if (k != 0)
 		{
 			const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), clientName, channelName);
 			sendData(client->getClientSock(), msg);
 			return ;
 		}
+	std::cout << "10\n";
 		const std::string &msg = ": IRC : Client kicked successfully \n";
 		sendData(client->getClientSock(), msg);
+	std::cout << "11\n";
+
 		const std::string &sg = standardMsg(clientToKick->getNickName(), clientToKick->getUserName(), clientToKick->getIpAddress()) + " KICK " + channelName + " * " + clientToKick->getRealName() + " :Kicked by " + client->getNickName() + " REASON :"+ m +"\r\n";
-		std::cout << clientToKick->getNickName();
+		std::cout << clientToKick->getNickName() << "\n";
+	std::cout << "12\n";
+
 		sendData(clientToKick->getClientSock(), sg);
+	std::cout << "13\n";
+
 		return;
 }
 

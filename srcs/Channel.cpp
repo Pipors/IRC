@@ -206,3 +206,15 @@ bool Channel::getTopicMode() const
 // {
 // 	this->getChannelClientsVector()->push_back(client);
 // }
+
+
+
+void Channel::printClient()
+{
+	std::vector<Client>::iterator it = channelClients.begin();
+	while (it != channelClients.end())
+	{
+		std::cout << it->getNickName() << std::endl;
+		it++;
+	}
+}

@@ -23,6 +23,7 @@ public :
 	void setPasswdRequired(const bool&);
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
+	void printClient();
 
 	bool userExistInChannelBySock(const int&);
 	bool channelIsFull();

@@ -50,6 +50,9 @@ public :
 	int kickClientFromChannel(const std::string &chaine,Client *client);
 	void inputClient(Client *client, std:: string name);
 	// void sendToAll(Client *client,const std::string msg, std::string name);
+	void partCommand(Client *client,const std::string &channelName, const std::string &message);
+	bool checkHashtag(const std::string & clientName);
+
 
 	std::string					standardMsg(std::string, std::string, std::string);
 	std::vector<Channel>		getChannelVector() const;

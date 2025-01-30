@@ -232,20 +232,130 @@ void Server::processCommand(Client* client, const char* message)
 			std::cout <<"channel::" <<*(it+1) << std::endl;
 			std::cout <<"nick ::" << *(it+2) << std::endl;
 			// while(1);
+			if(*(it + 2)->begin() == '#')
+			{
+				const std::string  &msg = ":IRC : KICK : SOMTHING WRONG .. !!\r\n";
+				command.sendData(client->getClientSock(), msg);
+				return;
+			}
+			std::cout << "wesh hna\n";
 			// Client *kickedClient = getClientFromServer(*(it + 2));
 			Client kickedClient = *(command.getChannelByName(*(it+1))->getClientFromChannelByName(*(it + 2)));
 			std::cout << "kkkkkkkkkkk\n";
 			// std::cout << kickedClient->getNickName() << "nickanem\n";
 			std::cout << "1" << std::endl;
-			 std::string m = " ";
+			std::string m = " ";
 			if(it + 3 != vec.end())
-				m = getRangeAsString(vec, it, vec.size(), " ");
+				m = getRangeAsString(vec, it + 3, vec.size(), " ");
 			else
 				m = "NO REASON INCLUDED... ";
 			command.kickCommand(client, *(it + 1), *(it + 2), &kickedClient, m);
-			
 			return;
 
+		}
+		if(equalStrings(*it, "PART") )
+		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return ;
+			std::string m = " ";
+			if(it + 2 != vec.end())
+				m = getRangeAsString(vec, it + 2, vec.size(), " ");
+			else
+				m = "NO REASON INCLUDED... ";
+			command.partCommand(client, *(it + 1), m);
+		}
+		if(equalStrings(*it, "WHO") )
+		{
+			Channel *channel = command.getChannelByName(*(it + 1));
+			if(!channel)
+			{
+				const std::string &msg = ":IRC " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 1));
+				command.sendData(client->getClientSock(), msg.c_str());
+				return ;
+			}
+            // std::vector<Client> *users = channel->getChannelClientsVector();
+			std::vector<Client>* vec = channel->getChannelClientsVector();
+			// std::vector<Client>::iterator it = vec->begin();
+			// while(it != vec->end())
+			for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); it++) 
+			{
+                Client vec = *it;
+				std::string msg;
+                if (it->isModerator())
+				{
+					// msg = "jj";
+                    msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), "Matrix", vec.getNickName(), "@x", vec.getRealName());
+				}
+                else
+				{
+					// msg = "jj";
+					 msg = ":" + this->serverName  + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), "Matrix", vec.getNickName(), "x", vec.getRealName());
+
+				}
+                command.sendData(client->getClientSock(), msg.c_str());
+				// it++;
+            }
+         	std::string msg = ":" + this->serverName + RPL_ENDOFWHO(client->getNickName(), channel->getChannelName());
+            send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		}
+		if(equalStrings(*it, "TOPIC") )
+		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+			{
+				return;
+			}
+			Channel *channel = command.getChannelByName(*(it + 1));
+			if(!channel)
+			{
+				const std::string &msg = ":IRC " + ERR_NOSUCHCHANNEL(client->getNickName(), *(it + 1));
+				std::cout << "1\n";
+				command.sendData(client->getClientSock(), msg.c_str());
+				return ;
+			}
+			if((it + 2) == vec.end())
+			{
+				std::string topic = channel->getTopic();
+				const std::string &msg = ":IRC " + RPL_TOPIC(client->getNickName(), *(it + 1),topic);
+				int r = send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				std::cout << r << std::endl;
+				return;
+			}
+			else if (it+2 != vec.end())
+			{
+					// std::cout << "here\n";
+    				// const std::string& g = *(it + 1); 
+					// if(g[1] == ':')
+					std::cout << "before EQual :" << (it + 2)->size() << std::endl;
+					if(equalStrings(*(it + 2), "::"))
+					{
+						(it + 2)->size();
+						std::cout << "555\n";
+						channel->setTopic("No topic is set");
+						return;
+					}
+
+				if(channel->getTopicMode() == 1)
+				{
+					if(!client->isModerator())
+					{
+						const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
+						send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+						return ;
+					}
+				}
+				std::cout << "6\n";
+				std::string range = getRangeAsString(vec, it + 2, vec.size(), " ");
+				channel->setTopic(range);
+			}
+			std::vector<Client>* vec = channel->getChannelClientsVector();
+			std::vector<Client>::iterator ite = vec->begin();
+			while(ite != vec->end())
+			{
+				std::string topic = channel->getTopic();
+				const std::string &msg = ":IRC " + RPL_TOPIC(ite->getNickName(), *(it + 1),topic);
+				 send(ite->getClientSock(), msg.c_str(), msg.size(), 0);
+				ite++;
+			}
 		}
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 		{

@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelL
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
 {
 
 }
@@ -202,6 +202,16 @@ bool Channel::getTopicMode() const
 	return this->topicMode;
 }
 
+std::string Channel::getTopic() const
+{
+	return this->topic;
+}
+
+void Channel::setTopic(const std::string & _topic)
+{
+	this->topic = _topic;
+}
+
 // void Channel::addClientToVector(Client client)
 // {
 // 	this->getChannelClientsVector()->push_back(client);
@@ -209,12 +219,13 @@ bool Channel::getTopicMode() const
 
 
 
-void Channel::printClient()
-{
-	std::vector<Client>::iterator it = channelClients.begin();
-	while (it != channelClients.end())
-	{
-		std::cout << it->getNickName() << std::endl;
-		it++;
-	}
-}
+// void Channel::printClient()
+// {
+// 	size_t it = 0 ;
+// 	while (it != channelClients.size())
+// 	{	
+// 		std::cout <<"heree :" <<  it << std::endl;
+// 		std::cout <<channelClients[it].getNickName() << std::endl;
+// 		it++;
+// 	}
+// }

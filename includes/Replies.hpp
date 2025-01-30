@@ -35,17 +35,18 @@
 //               //
 //    REPLIES    //
 //               //
-///////////////////
+//////////////////
 
 #define RPL_WELCOME(client, servername)													("001 " + client + " :Welcome to " + servername + " the most amazing IRC server u can use it to sell drugs, buy guns and do whatever you want\r\n")
 #define RPL_NOTOPIC(client, channel) 													("331 " + client + " " + channel + " :No topic is set\r\n")
-#define RPL_TOPIC(client, channel, topic) 												("332 " + client + " " + channel + " :" + topic + "\r\n")
+#define RPL_TOPIC(client, channel, topic) 												("332 " + client + " " + channel + " " + topic + "\r\n")
 #define RPL_TOPICWHOTIME(client, channel, nick, setat) 									("333 " + client + " " + channel + " " + nick + " " + setat + "\r\n")
 #define RPL_NAMREPLY(prefix, nick) 														(prefix + nick + " ")
 #define RPL_ENDOFNAMES(client, channel) 												("366 " + client + " " + channel + " :End of /NAMES list.\r\n")
 #define RPL_INVITING(client, nick, channel) 											("341 " + client + " " + nick + " " + channel + "\r\n")
-#define RPL_ENDOFWHO(client, mask) 														("315 " + client + " " + mask + " :End of WHO list.\r\n")
-#define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	("352 " + client + " " + channel + " " + username + " " + host + " " + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
+#define RPL_ENDOFWHO(client, mask) 														(" 315 " + client + " " + mask + " :End of /WHO list.\r\n")
+// #define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	(" 352 " + client + " " + channel + " " + username + " " + host + ".IP *." + server + " " + nick + " H" + prefixes + " 0 :" + realname + "\r\n")
+#define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname) (" 352 " + client + " " + channel + " " + username + " " + host + ".IP 0." + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
 #define RPL_CHANNELMODEIS(client, channel, modes)										("324 " + client + " " + channel + " " + modes + "\r\n")
 #define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + creation_time + "\r\n")
 

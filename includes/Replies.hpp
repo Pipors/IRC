@@ -3,6 +3,8 @@
 //     ERRORS     //
 //                //
 ////////////////////
+#include <string>
+
 
 #define ERR_NOSUCHCHANNEL(client, channel)												("403 " + client + " " + channel + " :No such channel\r\n")
 #define ERR_NICKNAMEINUSE(client, nick)													("433 " + client + " " + nick + " :Nickname is already in use\r\n")
@@ -13,7 +15,6 @@
 #define ERR_TOOMANYCHANNELS(client, channel) 											("405 " + client + " " + channel + " :You have joined too many channels\r\n")
 #define ERR_BADCHANNELKEY(client, channel) 												("475 " + client + " " + channel + " :Cannot join channel (+k)\r\n")
 #define ERR_BANNEDFROMCHAN(client, channel) 											("474 " + client + " " + channel + " :Cannot join channel (+b)\r\n")
-#define ERR_CHANNELISFULL(client, channel) 												("471 " + client + " " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_INVITEONLYCHAN(client, channel) 											("473 " + client + " " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANMASK(channel) 														("476 " + channel + " :Bad Channel Mask\r\n")
 #define ERR_NOTONCHANNEL(client, channel) 												("442 " + client + " " + channel + " :You're not on that channel\r\n")
@@ -44,11 +45,15 @@
 #define RPL_NAMREPLY(prefix, nick) 														(prefix + nick + " ")
 #define RPL_ENDOFNAMES(client, channel) 												("366 " + client + " " + channel + " :End of /NAMES list.\r\n")
 #define RPL_INVITING(client, nick, channel) 											("341 " + client + " " + nick + " " + channel + "\r\n")
-#define RPL_ENDOFWHO(client, mask) 														(" 315 " + client + " " + mask + " :End of /WHO list.\r\n")
+// #define RPL_ENDOFWHO(client, mask) 														(" 315 " + client + " " + mask + " :End of /WHO list.\r\n")
+#define RPL_ENDOFWHO(client, mask) 												("315 " + client + " " + mask + " :End of WHO list.\r\n")
 // #define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	(" 352 " + client + " " + channel + " " + username + " " + host + ".IP *." + server + " " + nick + " H" + prefixes + " 0 :" + realname + "\r\n")
-#define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname) (" 352 " + client + " " + channel + " " + username + " " + host + ".IP 0." + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
+// #define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname) (" 352 " + client + " " + channel + " " + username + " " + host + ".IP 0." + server + " " + nick + " H" + prefixes + " :0 " + realname + "\r\n")
+#define RPL_WHOREPLY(client, channel, username, host, server, nick, prefixes, realname)	("352 " + client + " " + channel + " " + username + " " + host + " " + server + nick + " H" + prefixes + " :0 :" + realname + "\r\n")
 #define RPL_CHANNELMODEIS(client, channel, modes)										("324 " + client + " " + channel + " " + modes + "\r\n")
-#define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + creation_time + "\r\n")
+// #define RPL_CHANNELMODEIS(client, channel, modes)										("324 " + client + " " + channel + " " + modes + "\r\n")
+#define RPL_CREATIONTIME(client, channel, creation_time)								("329 " + client + " " + channel + " " + std::to_string(creation_time) + "\r\n")
+// #define RPL_CREATIONTIME(client, channel, creation_time)	("329 " + client + " " + channel + " " + creation_time + "\r\n")
 
 
 

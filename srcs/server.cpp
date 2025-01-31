@@ -1,6 +1,6 @@
 #include "../includes/Server.hpp"
 
-Server::Server() : serverSock(-1), passwd(""), serverName("IRC")
+Server::Server() : serverSock(-1), passwd(""), serverName("IRC ")
 {
 	this->monitor.clear();
 	this->clients.clear();
@@ -206,7 +206,6 @@ int Server::getServerFd() const
 {
 	return this->serverSock;
 }
-
 
 /***********/
 /*         */

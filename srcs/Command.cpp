@@ -139,14 +139,16 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 					if (!channel->getPasswdRequired())
 					{
 						channel->setPasswd(arg);
+						channel->setPasswdRequired(true);
 						msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +k " + arg + "\r\n";	
 						sendData(client->getClientSock(), msg.c_str());
 					}
 					break;
 
-					case 'l': //redifine the limit number of client in a channel
+					case 'l': //redefine the limit number of client in a channel
 					if (channel->getChannelName()[0] == '#')
 					{
+						channel->setHasLimit(true);
 						channel->resizeClientLimit(atoi(arg.c_str()));
 						msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +l " + arg + "\r\n";	
 						sendData(client->getClientSock(), msg.c_str());
@@ -201,7 +203,10 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 
 					case 'l': //redifine the limit number of client in a channel
 					if (channel->getChannelName()[0] == '#')
+					{
+						channel->setHasLimit(false);
 						channel->resizeClientLimit(100);
+					}
 					break;
 
 					case 'o':
@@ -222,9 +227,29 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 			break;
 		}
 	}
+	// rpl_list(client, channel);
 	return ;
 }
 
+void Command::rpl_list(Client *client, Channel *channel)
+{
+
+    std::string reply_message;
+    reply_message += ":" + client->getIpAddress() + " 353 " + client->getNickName() + " = ";
+    reply_message += channel->getChannelName() + " :";
+    std::vector<Client>* Clients = channel->getChannelClientsVector();
+    std::vector<Client>::iterator it = Clients->begin();
+    for( it =  Clients->begin() ; it != Clients->end(); it++)
+    {
+        if(it->isModerator())
+        reply_message += "@";
+        reply_message += it->getNickName() + " ";
+    }
+	reply_message += "\r\n";
+    sendData(client->getClientSock(),reply_message);
+    reply_message = ":" + client->getIpAddress() + RPL_ENDOFNAMES(client->getNickName(), channel->getChannelName());
+    sendData(client->getClientSock(),reply_message);
+}
 
 void Command::joinCommand(Client *client, const std::string &param, const std::string& passwd)
 {

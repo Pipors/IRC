@@ -51,7 +51,9 @@ public :
 	void inputClient(Client *client, std:: string name);
 	// void sendToAll(Client *client,const std::string msg, std::string name);
 	void partCommand(Client *client,const std::string &channelName, const std::string &message);
-	bool checkHashtag(const std::string & clientName);
+	// bool checkHashtag(const std::string & clientName);
+	void rpl_list(Client *client, Channel *channel);
+
 
 
 	std::string					standardMsg(std::string, std::string, std::string);

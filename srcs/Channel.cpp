@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelL
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), hasLimit(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
 {
 
 }
@@ -36,7 +36,7 @@ void Channel::setInviteMode(const bool &mode)
 }
 
 
-bool Channel::getInviteMode()
+bool Channel::getInviteMode() const
 {
 	return this->inviteMode;
 }
@@ -152,6 +152,8 @@ void Channel::resizeClientLimit(const size_t& i)
 {
 	if (i >= channelClients.size())
 		this->channelLimit = i;
+	else
+		std::cout << "The number should be greater or equal to the number of clients in " << getChannelName() << std::endl;
 }
 
 Client *Channel::getClientFromChannelByName(const std::string& name)
@@ -217,15 +219,43 @@ void Channel::setTopic(const std::string & _topic)
 // 	this->getChannelClientsVector()->push_back(client);
 // }
 
+void Channel::setHasLimit(const size_t& val)
+{
+	this->hasLimit = val;
+}
+bool Channel::getHasLimit() const
+{
+	return this->hasLimit;
+}
 
 
-// void Channel::printClient()
-// {
-// 	size_t it = 0 ;
-// 	while (it != channelClients.size())
-// 	{	
-// 		std::cout <<"heree :" <<  it << std::endl;
-// 		std::cout <<channelClients[it].getNickName() << std::endl;
-// 		it++;
-// 	}
-// }
+
+bool Channel::getNumberOfModerator() const
+{
+	size_t it = 0;
+	int count  = 0;
+	while (it != channelClients.size())
+	{
+		if (channelClients[it].isModerator())
+			count++;
+		it++;
+	}
+	return ((count > 1) ? true : false);
+}
+
+
+std::string Channel::getChannelMode() const
+{
+	std::string modes = "";
+	if (this->getInviteMode())
+		modes += " +i";
+	if (this->getTopicMode())
+		modes += " +t";
+	if (this->getPasswdRequired())
+		modes += " +k";
+	if (this->getHasLimit())
+		modes += " +l";
+	if (this->getNumberOfModerator())
+		modes += " +o";
+	return modes;
+}

@@ -312,6 +312,12 @@ void Server::processCommand(Client* client, const char* message)
 				command.sendData(client->getClientSock(), msg.c_str());
 				return ;
 			}
+			if(command.inviteclientcheck(client, channel->getChannelName()) !=3)
+			{
+					const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
+					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+					return;
+			}
 			if((it + 2) == vec.end())
 			{
 				std::string topic = channel->getTopic();

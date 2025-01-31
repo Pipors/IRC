@@ -1,12 +1,9 @@
 #include "../includes/Server.hpp"
 
-Server::Server()
+Server::Server() : serverSock(-1), passwd(""), serverName("IRC")
 {
-	this->passwd = "";
-	this->serverSock = -1;
 	this->monitor.clear();
 	this->clients.clear();
-	std::string serverName = "IRC";
 }
 
 Server::~Server()
@@ -275,7 +272,7 @@ std::vector<std::string> Server::getWords_(const std::string &str)
 std::string Server::getRangeAsString(const std::vector<std::string>& vec, std::vector<std::string>::iterator it,  size_t end, std::string delimiter) 
 {
 	if (it >= vec.end() || end > vec.size()) 
-		throw std::out_of_range("Invalid range specified.");
+		return "";
 	// Extract range and concatenate strings
 	std::string result = "";
 	while (it != vec.begin() + end) 

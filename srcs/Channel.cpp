@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelL
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), hasLimit(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
 {
 
 }
@@ -202,6 +202,16 @@ void Channel::setTopicMode(const bool& val)
 bool Channel::getTopicMode() const
 {
 	return this->topicMode;
+}
+
+std::string Channel::getTopic() const
+{
+	return this->topic;
+}
+
+void Channel::setTopic(const std::string & _topic)
+{
+	this->topic = _topic;
 }
 
 // void Channel::addClientToVector(Client client)

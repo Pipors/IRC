@@ -24,7 +24,8 @@ public :
 	void setPasswdRequired(const bool&);
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
-	
+	void setTopic(const std::string & _topic);
+	// void printClient();
 
 	bool userExistInChannelBySock(const int&);
 	bool channelIsFull();
@@ -42,14 +43,12 @@ public :
 	std::string getPasswd() const;
 	std::string getCurrentTimestamp();
 	std::string getChannelMode() const;
+	std::string getTopic()const ;
 
 	size_t getChannelLimit() const;
 	size_t getChannelClientSize();
 	
 	std::vector<Client> *getChannelClientsVector();
-
-
-
 	Client *getClientFromChannelByName(const std::string& name);
 
 private :
@@ -61,5 +60,6 @@ private :
 	std::string channelName;
 	std::string channelPasswd;
 	std::vector<Client> channelClients;     // Storing the clients joining a channel
+	std::string topic;
 };
 

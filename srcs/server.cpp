@@ -210,7 +210,6 @@ int Server::getServerFd() const
 	return this->serverSock;
 }
 
-
 /***********/
 /*         */
 /* GETTERS */
@@ -372,7 +371,7 @@ bool Server::nickNameInUse(Client *client, const std::string& name)
 	{
 		if (it->getClientSock() != client->getClientSock())
 		{
-			if (strncmp(it->getNickName().c_str(), name.c_str(), name.size()) == 0)
+			if (strncmp(it->getNickName().c_str(), name.c_str(), it->getNickName().size()) == 0)
 				return true;
 		}
 		it++;

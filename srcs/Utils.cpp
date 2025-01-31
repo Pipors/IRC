@@ -68,7 +68,7 @@ void Server::processCommand(Client* client, const char* message)
 				return;
 			if (name[0] != '#' || name.size() == 1)
 			{
-				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " JOIN " + ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
+				const std::string& msg = ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
 				command.sendData(client->getClientSock(), msg);
 				return;
 			}
@@ -132,21 +132,29 @@ void Server::processCommand(Client* client, const char* message)
 
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
-			if ((it + 2) == vec.end())
+			const std::string& name = *(it + 1);
+			if ((it + 1) == vec.end())
 				return;
 
-			const std::string& name = *(it + 1);
-			if ((name[0] != '#' || name.size() == 1) && ((it + 1) != vec.end() && (it + 2) != vec.end()) && command.channelExist(*(it + 1)))
+			if (vec.size() == 2 && command.channelExist(name))
 			{
-				const std::string& msg = ":" + client->getNickName()+ "!" + client->getUserName() + "@" + client->getIpAddress() + ".IP JOIN " + ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
+				const std::string& msg = ":IRC " + RPL_CHANNELMODEIS(client->getNickName(), name, command.getChannelByName(name)->getChannelMode());
+           		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+           		const std::string& msg1 = ": IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), 1998);
+           		send(client->getClientSock(), msg1.c_str(), msg1.size(), 0);
+           		return;
+
+			}
+
+			if (((name[0] != '#' || name.size() == 1) || ((it + 1) != vec.end() || (it + 2) != vec.end())) && command.channelExist(*(it + 1)))
+			{
+				const std::string& msg = ":IRC " + ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
 				command.sendData(client->getClientSock(), msg);
 				return;
 			}
-
 		
-			if ((equalStrings(*(it + 2), "+k") || equalStrings(*(it + 2), "+o") || equalStrings(*(it + 2), "+l") || equalStrings(*(it + 2), "-o")) && (it + 3) != vec.end())
+			else if ((equalStrings(*(it + 2), "+k") || equalStrings(*(it + 2), "+o") || equalStrings(*(it + 2), "+l") || equalStrings(*(it + 2), "-o")) && (it + 3) != vec.end())
 				command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
-
 			else
 				command.modeCommand(client, *(it + 1), *(it + 2), "NULL");
 
@@ -222,10 +230,15 @@ void Server::processCommand(Client* client, const char* message)
 			{
 				return ;
 			}
-			command.kickCommand(client, vec, it);
+			// if (command.getChannelByName(*(it + 1))->)
+			command.kickCommand(client, *(it + 1), *(it + 2));
 			Client *kickedClient = getClientFromServer(*(it + 2));
-			const std::string &msg = command.standardMsg(kickedClient->getNickName(), kickedClient->getUserName(), kickedClient->getIpAddress()) + " KICK " + *(it+1) + " * " + kickedClient->getRealName() + " :Kicked by " + client->getNickName() + "\r\n";
-			command.sendData(kickedClient->getClientSock(), msg);
+			if(!kickedClient)
+			{
+			std::cout << "noooooooo11111111\n";
+			return;}	
+			// const std::string &msg = command.standardMsg(kickedClient->getNickName(), kickedClient->getUserName(), kickedClient->getIpAddress()) + " KICK " + *(it+1) + " * " + kickedClient->getRealName() + " :Kicked by " + client->getNickName() + "\r\n";
+			// command.sendData(kickedClient->getClientSock(), msg);
 			return;
 
 		}

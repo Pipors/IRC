@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelL
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0)
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), hasLimit(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0)
 {
 
 }
@@ -36,7 +36,7 @@ void Channel::setInviteMode(const bool &mode)
 }
 
 
-bool Channel::getInviteMode()
+bool Channel::getInviteMode() const
 {
 	return this->inviteMode;
 }
@@ -152,6 +152,8 @@ void Channel::resizeClientLimit(const size_t& i)
 {
 	if (i >= channelClients.size())
 		this->channelLimit = i;
+	else
+		std::cout << "The number should be greater or equal to the number of clients in " << getChannelName() << std::endl;
 }
 
 Client *Channel::getClientFromChannelByName(const std::string& name)
@@ -166,16 +168,20 @@ Client *Channel::getClientFromChannelByName(const std::string& name)
 	return NULL;
 }
 
-void Channel::removeClientFromChannel(const std::string& toremove)
+void Channel::removeClientFromChannel(const Client& client)
 {
 	std::vector<Client>::iterator it = channelClients.begin();
 	while (it != channelClients.end())
 	{
-		if (it->getNickName() == toremove)
+		if (it->getNickName() == client.getNickName())
+		{
 			channelClients.erase(it);
+			return;
+		}
 		it++;
 	}
 }
+
 
 
 void Channel::setChannelLimit(const size_t& limit)
@@ -202,3 +208,44 @@ bool Channel::getTopicMode() const
 // {
 // 	this->getChannelClientsVector()->push_back(client);
 // }
+
+void Channel::setHasLimit(const size_t& val)
+{
+	this->hasLimit = val;
+}
+bool Channel::getHasLimit() const
+{
+	return this->hasLimit;
+}
+
+
+
+bool Channel::getNumberOfModerator() const
+{
+	size_t it = 0;
+	int count  = 0;
+	while (it != channelClients.size())
+	{
+		if (channelClients[it].isModerator())
+			count++;
+		it++;
+	}
+	return ((count > 1) ? true : false);
+}
+
+
+std::string Channel::getChannelMode() const
+{
+	std::string modes = "";
+	if (this->getInviteMode())
+		modes += " t";
+	if (this->getTopicMode())
+		modes += " i";
+	if (this->getPasswdRequired())
+		modes += " k";
+	if (this->getHasLimit())
+		modes += " l";
+	if (this->getNumberOfModerator())
+		modes += " o";
+	return modes;
+}

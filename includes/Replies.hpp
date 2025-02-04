@@ -43,7 +43,7 @@
 #define RPL_TOPIC(client, channel, topic) 												("332 " + client + " " + channel + " " + topic + "\r\n")
 #define RPL_TOPICWHOTIME(client, channel, nick, setat) 									("333 " + client + " " + channel + " " + nick + " " + setat + "\r\n")
 #define RPL_NAMREPLY(prefix, nick) 														(prefix + nick + " ")
-#define RPL_ENDOFNAMES(client, channel) 												("366 " + client + " " + channel + " :End of /NAMES list.\r\n")
+#define RPL_ENDOFNAMES(client, channel) 												(" 366 " + client + " " + channel + " :End of /NAMES list.\r\n")
 #define RPL_INVITING(client, nick, channel) 											("341 " + client + " " + nick + " " + channel + "\r\n")
 // #define RPL_ENDOFWHO(client, mask) 														(" 315 " + client + " " + mask + " :End of /WHO list.\r\n")
 #define RPL_ENDOFWHO(client, mask) 												("315 " + client + " " + mask + " :End of WHO list.\r\n")

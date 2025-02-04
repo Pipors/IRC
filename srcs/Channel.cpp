@@ -259,3 +259,13 @@ std::string Channel::getChannelMode() const
 		modes += " +o";
 	return modes;
 }
+
+void Channel::sendToAll(const std::string& msg)
+{
+    std::vector<Client>::iterator it = channelClients.begin();
+    while(it != channelClients.end())
+    {
+        send(it->getClientSock(), msg.c_str(), msg.size(), 0);
+        it++;
+    }
+}

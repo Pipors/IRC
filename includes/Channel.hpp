@@ -50,6 +50,8 @@ public :
 	
 	std::vector<Client> *getChannelClientsVector();
 	Client *getClientFromChannelByName(const std::string& name);
+	void sendToAll(const std::string& msg);
+
 
 private :
 	bool requirePasswd;                    // for joining a channel

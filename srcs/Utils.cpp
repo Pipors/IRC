@@ -274,6 +274,8 @@ void Server::processCommand(Client* client, const char* message)
 			else
 				m = "NO REASON INCLUDED... ";
 			command.partCommand(client, *(it + 1), m);
+			command.rpl_list(client, command.getChannelByName(*(it + 2))); 
+
 		}
 		if(equalStrings(*it, "WHO") )
 		{
@@ -315,6 +317,10 @@ void Server::processCommand(Client* client, const char* message)
             // }
 			// std::string msg = ":IRC " + RPL_ENDOFWHO(client->getNickName(), channel->getChannelName());
             // send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		}
+		if(equalStrings(*it, "BOT") )
+		{
+			std::cout << "hello\n";
 		}
 		if(equalStrings(*it, "TOPIC") )
 		{

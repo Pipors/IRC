@@ -25,6 +25,7 @@ public :
 	void setPasswd(const std::string&);
 	void setTopicMode(const bool&);
 	void setTopic(const std::string & _topic);
+	void sendToAll(const std::string& msg);
 	// void printClient();
 
 	bool userExistInChannelBySock(const int&);

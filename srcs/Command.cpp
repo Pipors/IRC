@@ -164,14 +164,19 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 					if (channel->getClientFromChannelByName(arg) == NULL)
 					{
 						msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
-						sendData(client->getClientSock(), msg.c_str());
+						// sendData(client->getClientSock(), msg.c_str());
+					}
+					else if (channel->getClientFromChannelByName(arg)->isModerator())
+					{
+						msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
+						// sendData(client->getClientSock(), msg.c_str());
 					}
 					else
 					{
 						channel->getClientFromChannelByName(arg)->setModerator(true);
 						msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +o " + arg + "\r\n";	
-						sendData(client->getClientSock(), msg);
 					}
+					channel->sendToAll(msg);
 					break;
 
 					case 't':
@@ -292,7 +297,7 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 			return; //!!
 		}
 		
-
+			client->setModerator(false);
 			channel->AddUser2Channel(client);
 			const std::string& msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " JOIN " + param + " * " + client->getRealName() + "\r\n" ;
 			sendData(client->getClientSock(), msg.c_str());

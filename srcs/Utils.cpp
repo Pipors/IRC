@@ -146,6 +146,7 @@ void Server::processCommand(Client* client, const char* message)
 
 			if (vec.size() == 2 && command.channelExist(name))
 			{
+				std::cout << command.getChannelByName(name)->getChannelMode() << "\n";
 				const std::string& msg = ":IRC " + RPL_CHANNELMODEIS(client->getNickName(), name, command.getChannelByName(name)->getChannelMode());
            		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
            		const std::string& msg1 = ": IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), 1998);

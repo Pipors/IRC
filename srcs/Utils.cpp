@@ -241,8 +241,9 @@ void Server::processCommand(Client* client, const char* message)
 				return ;
 			if(*(it + 2)->begin() == '#')
 			{
-				const std::string  &msg = RPL_KICKED(client->getUserName(), *(it + 1), client->getNickName());
-				
+				const std::string &msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " Somthing is Wrong..";
+				// const std::string  &msg = RPL_KICKED(client->getUserName(), *(it + 1), client->getNickName());
+				// command.getChannelByName(*(it + 1))->sendToAll(msg);
 				command.sendData(client->getClientSock(), msg);
 				return;
 			}
@@ -263,13 +264,17 @@ void Server::processCommand(Client* client, const char* message)
 		}
 		if(equalStrings(*it, "PART") )
 		{
+			std::cout << "3\n";
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return ;
+			std::cout << "4\n";
+
 			std::string m = " ";
 			if(it + 2 != vec.end())
 				m = getRangeAsString(vec, it + 2, vec.size(), " ");
 			else
 				m = "NO REASON INCLUDED... ";
+			std::cout << "5\n";
 			command.partCommand(client, *(it + 1), m);
 
 		}

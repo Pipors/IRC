@@ -245,11 +245,13 @@ void Command::rpl_list(Client *client, Channel *channel)
     reply_message += channel->getChannelName() + " :";
     std::vector<Client>* Clients = channel->getChannelClientsVector();
     std::vector<Client>::iterator it = Clients->begin();
-    for( it =  Clients->begin() ; it != Clients->end(); it++)
+    // for( it =  Clients->begin() ; it != Clients->end(); it++)
+	while(it != Clients->end())
     {
         if(it->isModerator())
         reply_message += "@";
         reply_message += it->getNickName() + " ";
+		it++;
     }
 	reply_message += "\r\n";
     sendData(client->getClientSock(),reply_message);
@@ -481,11 +483,13 @@ void Command::kickCommand(Client *client,  const std::string& channelName, const
 		sendData(client->getClientSock(), msg);
 		return ;
 	}
-		const std::string &msg = ": IRC : Client kicked successfully \n";
+		const std ::string &msg =  standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " : IRC : Client kicked successfully \r\n";
 		sendData(client->getClientSock(), msg);
 
 		const std::string &sg = standardMsg(clientToKick->getNickName(), clientToKick->getUserName(), clientToKick->getIpAddress()) + " KICK " + channelName + " * " + clientToKick->getRealName() + " :Kicked by " + client->getNickName() + " REASON :"+ m +"\r\n";
+		// sendData(clientToKick->getClientSock(), sg);
 		sendData(clientToKick->getClientSock(), sg);
+		channel->sendToAll(sg);
 		return;
 }
 
@@ -493,22 +497,30 @@ void Command::partCommand(Client *client,const std::string &channelName, const s
 {
 	(void)message;
 		Channel *channel = getChannelByName(channelName);
+	std::cout << "44\n";
 	if(!channel)
 	{
 		const std::string &msg = ":IRC " + ERR_NOSUCHCHANNEL(client->getNickName(), channelName);
 		sendData(client->getClientSock(), msg.c_str());
 		return ;
 	}
+			std::cout << "55\n";
 	if(clientinthechannel(channelName, client->getNickName()) != 0)
 	{
-			const std::string  &msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channelName);
+			const std::string  &msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channelName);
 			sendData(client->getClientSock(), msg);
 			return ;
 	}
+			std::cout << "33\n";
+
 	std::vector<Client>* vec = channel->getChannelClientsVector();
 	std::vector<Client>::iterator it = vec->begin();
+			std::cout << "22\n";
+
 	if(client->isModerator())
 	{
+			std::cout << "232\n";
+
 		int k = 0;
 		while(it != vec->end())
 		{
@@ -526,17 +538,18 @@ void Command::partCommand(Client *client,const std::string &channelName, const s
 				{
 					if((it+1) != vec->end())
 						(it + 1)->setModerator(true);
-					else
-					{
-						if(it - 1 != vec->end())
-							(it - 1)->setModerator(true);
-					}
-
+					// else if (it - 1 != vec->end())
+					// {
+					// 		(it - 1)->setModerator(true);
+					// // }
+					// else 
+					// 	return;
 				}
 				it++;
 			}
 		}
 	}	
+			std::cout << "122\n";
 	const std::string &sg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " PART  " + channelName + " * " + client->getRealName() +" : " + client->getNickName() + " HAS PARTED " + " REASON :"+ message +"\r\n";
 	// std::string msg = ":" + client->getNickName() + "!" + client->getUserName() + "@" + client->getIpAddress() + " PART " + channelName + "\r\n";
 	sendData(client->getClientSock(), sg);
@@ -617,6 +630,10 @@ void Command::sendToAll(Client *client,const std::string msg, std::string name)
 {
 	Channel *channel = getChannelByName(name);
 	std::vector<Client>* otherClients = channel->getChannelClientsVector();
+	std::cout << "1\n";
+	if(!otherClients)
+		return;
+	std::cout << "2\n";
 	size_t i = 0;
 	while (i < otherClients->size())
 	{

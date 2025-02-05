@@ -516,13 +516,7 @@ void Command::partCommand(Client *client,const std::string &channelName, const s
 
 	std::vector<Client>* vec = channel->getChannelClientsVector();
 	std::vector<Client>::iterator it = vec->begin();
-<<<<<<< HEAD
-			std::cout << "22\n";
-
-	if(client->isModerator())
-=======
 	if(channel->checkClientIsModerator(client->getClientSock()))
->>>>>>> e389f4d65c8ffbd166e5668de748866aeda19414
 	{
 			std::cout << "232\n";
 

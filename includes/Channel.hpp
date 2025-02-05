@@ -26,7 +26,7 @@ public :
 	void setTopicMode(const bool&);
 	void setTopic(const std::string & _topic);
 	void sendToAll(const std::string& msg);
-	size_t addModerator(const Client&);
+	void addModerator(const Client&);
 	// void printClient();
 
 	bool userExistInChannelBySock(const int&);

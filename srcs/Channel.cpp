@@ -255,7 +255,7 @@ std::string Channel::getChannelMode() const
 		modes += " +k";
 	if (this->getHasLimit())
 		modes += " +l";
-	if (this->getNumberOfModerator())
+	if (this->operators.size() > 1)
 		modes += " +o";
 	return modes;
 }
@@ -271,11 +271,9 @@ void Channel::sendToAll(const std::string& msg)
 }
 
 
-size_t Channel::addModerator(const Client &client)
+void Channel::addModerator(const Client &client)
 {
 	this->operators.push_back(client);
-	return operators.size();
-
 }
 
 

@@ -104,7 +104,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 	if (!channel)
 		return;
 
-	if (client->isModerator() == false)
+	if (channel->checkClientIsModerator(client->getClientSock()) == false)
 	{
 		const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), channel->getChannelName());
 		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
@@ -167,7 +167,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
                         msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
                         // sendData(client->getClientSock(), msg.c_str());
                     }
-                    else if (channel->getClientFromChannelByName(arg)->isModerator())
+                    else if (channel->checkClientIsModerator(client->getClientSock()))
                     {
                         msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
                         // sendData(client->getClientSock(), msg.c_str());
@@ -180,7 +180,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
                     channel->sendToAll(msg);
                     break;
 					case 't':
-					if (channel->getTopicMode() == false && channel->getClientFromChannelByName(arg)->isModerator())
+					if (channel->getTopicMode() == false && channel->checkClientIsModerator(client->getClientSock()))
 					{
 						std::cout << "huwa\n";
 						channel->setTopicMode(true);
@@ -248,8 +248,8 @@ void Command::rpl_list(Client *client, Channel *channel)
     // for( it =  Clients->begin() ; it != Clients->end(); it++)
 	while(it != Clients->end())
     {
-        if(it->isModerator())
-        reply_message += "@";
+        if(channel->checkClientIsModerator(client->getClientSock()))
+      		reply_message += "@";
         reply_message += it->getNickName() + " ";
 		it++;
     }
@@ -264,6 +264,7 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 	if (channelExist(param) == false)
 	{
 		Channel newChannel(param);
+		newChannel.addModerator(*client);
 		client->setModerator(true);
 		newChannel.AddUser2Channel(client);
 		this->channels.push_back(newChannel);
@@ -448,7 +449,7 @@ void Command::kickCommand(Client *client,  const std::string& channelName, const
 		return ;
 	}
 
-	if(client->isModerator() != true)
+	if(channel->checkClientIsModerator(client->getClientSock()) == false)
 	{
 		const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), channelName);
 		sendData(client->getClientSock(), msg);
@@ -515,16 +516,20 @@ void Command::partCommand(Client *client,const std::string &channelName, const s
 
 	std::vector<Client>* vec = channel->getChannelClientsVector();
 	std::vector<Client>::iterator it = vec->begin();
+<<<<<<< HEAD
 			std::cout << "22\n";
 
 	if(client->isModerator())
+=======
+	if(channel->checkClientIsModerator(client->getClientSock()))
+>>>>>>> e389f4d65c8ffbd166e5668de748866aeda19414
 	{
 			std::cout << "232\n";
 
 		int k = 0;
 		while(it != vec->end())
 		{
-			if(it->isModerator())
+			if(channel->checkClientIsModerator(client->getClientSock()))
 				k++;
 			it++;
 

@@ -165,19 +165,21 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 					if (channel->getClientFromChannelByName(arg) == NULL)
                     {
                         msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
-                        // sendData(client->getClientSock(), msg.c_str());
+                        sendData(client->getClientSock(), msg.c_str());
                     }
-                    else if (channel->checkClientIsModerator(client->getClientSock()))
+                    else if (channel->checkClientIsModerator(client->getClientSock()) == false)
                     {
                         msg =  ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), arg, channel->getChannelName());
-                        // sendData(client->getClientSock(), msg.c_str());
+                        sendData(client->getClientSock(), msg.c_str());
                     }
                     else
                     {
-                        channel->getClientFromChannelByName(arg)->setModerator(true);
+						Client *cl = channel->getClientFromChannelByName(arg);
+                        channel->addModerator(cl);
                         msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " MODE " + channel->getChannelName() + " +o " + arg + "\r\n";
-                    }
-                    channel->sendToAll(msg);
+						channel->sendToAll(msg);
+					}
+                    // channel->sendToAll(msg);
                     break;
 					case 't':
 					if (channel->getTopicMode() == false && channel->checkClientIsModerator(client->getClientSock()))
@@ -216,7 +218,7 @@ void Command::modeCommand(Client *client, const std::string&target, const std::s
 					break;
 
 					case 'o':
-					channel->getClientFromChannelByName(arg)->setModerator(false);
+					channel->removeModerator(client);
 					break;
 
 					case 't':
@@ -241,30 +243,34 @@ void Command::rpl_list(Client *client, Channel *channel)
 {
 
     std::string reply_message;
-    reply_message += ":" + client->getIpAddress() + " 353 " + client->getNickName() + " = ";
-    reply_message += channel->getChannelName() + " :";
+    std::string reply_message1;
+    reply_message += ":" + client->getIpAddress() + " 353 " + client->getNickName() + " = " + channel->getChannelName() + " :";
+    // reply_message += channel->getChannelName() + " :";
     std::vector<Client>* Clients = channel->getChannelClientsVector();
     std::vector<Client>::iterator it = Clients->begin();
     for( it =  Clients->begin() ; it != Clients->end(); it++)
     {
-        if(channel->checkClientIsModerator(client->getClientSock()))
+        if(channel->checkClientIsModerator(it->getClientSock()))
       		reply_message += "@";
         reply_message += it->getNickName() + " ";
     }
+	std::cout << client->getNickName() << "  ::  ";
+	channel->printOp();
 	reply_message += "\r\n";
     sendData(client->getClientSock(),reply_message);
-    reply_message = ":" + client->getIpAddress() + RPL_ENDOFNAMES(client->getNickName(), channel->getChannelName());
-    sendData(client->getClientSock(),reply_message);
+    reply_message1 = ":" + client->getIpAddress() + RPL_ENDOFNAMES(client->getNickName(), channel->getChannelName());
+    sendData(client->getClientSock(),reply_message1);
 }
 
 void Command::joinCommand(Client *client, const std::string &param, const std::string& passwd)
 {
 	if (channelExist(param) == false)
 	{
+		std::cout << "jdiiiida" << "\n";
 		Channel newChannel(param);
-		newChannel.addModerator(*client);
-		client->setModerator(true);
+		// client->setModerator(true);
 		newChannel.AddUser2Channel(client);
+		newChannel.addModerator(client);
 		this->channels.push_back(newChannel);
 
 		const std::string& msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " JOIN " + param + " * :" + client->getRealName() + "\r\n";
@@ -272,6 +278,8 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 	}
 	else if (channelExist(param))
 	{
+		std::cout << "9diiima" << "\n";
+
 		Channel *channel = getChannelByName(param);
 
 		if (channel == NULL)
@@ -319,10 +327,11 @@ void Command::joinCommand(Client *client, const std::string &param, const std::s
 			return; //!!
 		}
 		
-			client->setModerator(false);
+			// client->setModerator(false);
 			channel->AddUser2Channel(client);
 			const std::string& msg = standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " JOIN " + param + " * " + client->getRealName() + "\r\n" ;
 			sendData(client->getClientSock(), msg.c_str());
+
 			return ; //!!
 		// return;
 	}	
@@ -336,6 +345,7 @@ Channel *Command::getChannelByName(const std::string& name)
 	{
 		if (channels[i].getChannelName() == name)
 		{
+			std::cout << channels[i].getChannelName() << " -> kaynaaaaaaaa\n";
 			return &(channels[i]);
 		}
 	}
@@ -526,11 +536,11 @@ void Command::partCommand(Client *client,const std::string &channelName, const s
 				if( it->getNickName() == client->getNickName())
 				{
 					if((it+1) != vec->end())
-						(it + 1)->setModerator(true);
+						channel->addModerator(&(*(it + 1)));
 					else
 					{
 						if(it - 1 != vec->end())
-							(it - 1)->setModerator(true);
+							channel->addModerator(&(*(it - 1)));
 					}
 
 				}

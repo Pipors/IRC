@@ -230,18 +230,18 @@ bool Channel::getHasLimit() const
 
 
 
-bool Channel::getNumberOfModerator() const
-{
-	size_t it = 0;
-	int count  = 0;
-	while (it != channelClients.size())
-	{
-		if (channelClients[it].isModerator())
-			count++;
-		it++;
-	}
-	return ((count > 1) ? true : false);
-}
+// bool Channel::getNumberOfModerator() const
+// {
+// 	size_t it = 0;
+// 	int count  = 0;
+// 	while (it != channelClients.size())
+// 	{
+// 		if (channelClients[it].isModerator())
+// 			count++;
+// 		it++;
+// 	}
+// 	return ((count > 1) ? true : false);
+// }
 
 
 std::string Channel::getChannelMode() const
@@ -271,9 +271,23 @@ void Channel::sendToAll(const std::string& msg)
 }
 
 
-void Channel::addModerator(const Client &client)
+void Channel::addModerator(const Client *client)
 {
-	this->operators.push_back(client);
+	this->operators.push_back(*client);
+}
+
+void Channel::removeModerator(const Client *client)
+{
+	std::vector<Client>::iterator it = operators.begin();
+    while(it != operators.end())
+    {
+        if (it->getClientSock() == client->getClientSock())
+		{
+			operators.erase(it);
+			return ;
+		}
+        it++;
+    }
 }
 
 
@@ -288,4 +302,15 @@ bool Channel::checkClientIsModerator(const int& fd)
 		it++;
 	}
 	return false;
+}
+
+void Channel::printOp()
+{
+	std::vector<Client>::iterator it = operators.begin();
+	while (it != operators.end())
+	{
+	
+		std::cout << it->getNickName() << "\n";
+		it++;
+	}
 }

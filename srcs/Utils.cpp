@@ -212,8 +212,8 @@ void Server::processCommand(Client* client, const char* message)
 					return;
 				}
 
-				invitedClient->setModerator(false);
 				command.getChannelByName(*(it + 2))->AddUser2Channel(invitedClient);
+				command.getChannelByName(*(it + 2))->addModerator(invitedClient);
 				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
 				command.sendData(invitedClient->getClientSock(), msg);
 
@@ -285,12 +285,13 @@ void Server::processCommand(Client* client, const char* message)
 				return ;
 			}
 			std::vector<Client>* users = channel->getChannelClientsVector();
-			command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
+			// command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
+			command.rpl_list(client, channel); 
             for (std::vector<Client>::iterator it = users->begin(); it != users->end(); ++it)
             {
                 Client user = *it;
                 std::string msg;
-                if (user.isModerator())
+                if (channel->checkClientIsModerator(user.getClientSock()))
                     msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "@x", user.getRealName());
                 else
                     msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "x", user.getRealName());

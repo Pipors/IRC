@@ -1,6 +1,6 @@
 #include "../includes/Server.hpp"
 
-Server::Server() : serverSock(-1), passwd(""), serverName("IRC")
+Server::Server() : serverSock(-1), passwd(""), serverName("IRC ")
 {
 	this->monitor.clear();
 	this->clients.clear();
@@ -21,8 +21,8 @@ void Server::setServerSock(int port)
 {
 	struct pollfd serverPoll;
 	int optval = 1;
-	serverAddr.sin_family = AF_INET; // for IP v4
-    serverAddr.sin_addr.s_addr = INADDR_ANY; // any address
+	serverAddr.sin_family = AF_INET; // for IPv4 usage
+    serverAddr.sin_addr.s_addr = INADDR_ANY; // address to communicate with
     serverAddr.sin_port = htons((uint16_t)port); //port to communicate from
 
 	this->serverSock = socket(AF_INET, SOCK_STREAM, 0);

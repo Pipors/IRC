@@ -9,7 +9,7 @@ Channel::Channel() : requirePasswd(false), inviteMode(0), topicMode(0), channelL
 }
 
 
-Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(false), topicMode(false), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
+Channel::Channel(const std::string& _channelName) : requirePasswd(false), inviteMode(0), topicMode(0), hasLimit(0), channelLimit(100) ,channelName(_channelName), channelPasswd(""), channelClients(0), topic(" No topic is set")
 {
 
 }
@@ -248,25 +248,24 @@ std::string Channel::getChannelMode() const
 {
 	std::string modes = "";
 	if (this->getInviteMode())
-		modes += " i";
+		modes += " +i";
 	if (this->getTopicMode())
-		modes += " t";
+		modes += " +t";
 	if (this->getPasswdRequired())
-		modes += " k";
+		modes += " +k";
 	if (this->getHasLimit())
-		modes += " l";
+		modes += " +l";
 	if (this->getNumberOfModerator())
-		modes += " o";
+		modes += " +o";
 	return modes;
 }
 
-
 void Channel::sendToAll(const std::string& msg)
 {
-	std::vector<Client>::iterator it = channelClients.begin();
-	while(it != channelClients.end())
-	{
-		send(it->getClientSock(), msg.c_str(), msg.size(), 0);
-		it++;
-	}
+    std::vector<Client>::iterator it = channelClients.begin();
+    while(it != channelClients.end())
+    {
+        send(it->getClientSock(), msg.c_str(), msg.size(), 0);
+        it++;
+    }
 }

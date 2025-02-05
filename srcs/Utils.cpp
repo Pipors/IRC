@@ -146,16 +146,16 @@ void Server::processCommand(Client* client, const char* message)
 
 			if (vec.size() == 2 && command.channelExist(name))
 			{
-				std::cout << command.getChannelByName(name)->getChannelMode() << "\n";
+				// command.rpl_list(client, command.getChannelByName(name)); 
 				const std::string& msg = ":IRC " + RPL_CHANNELMODEIS(client->getNickName(), name, command.getChannelByName(name)->getChannelMode());
            		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-           		const std::string& msg1 = ": IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), 1998);
+           		const std::string& msg1 = ":IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), 1998);
            		send(client->getClientSock(), msg1.c_str(), msg1.size(), 0);
            		return;
 
 			}
 
-			if (((name[0] != '#' || name.size() == 1) || ((it + 1) != vec.end() || (it + 2) != vec.end())) && command.channelExist(*(it + 1)))
+			if (((name[0] != '#' || name.size() == 1)) && ((it + 1) != vec.end() && (it + 2) != vec.end()) && command.channelExist(*(it + 1)))
 			{
 				const std::string& msg = ":IRC " + ERR_NEEDMOREPARAMS(client->getNickName(), "JOIN") ;
 				command.sendData(client->getClientSock(), msg);
@@ -166,6 +166,7 @@ void Server::processCommand(Client* client, const char* message)
 				command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
 			else
 				command.modeCommand(client, *(it + 1), *(it + 2), "NULL");
+				// command.rpl_list(client, command.getChannelByName(name));
 
 			return;
 		}
@@ -211,6 +212,7 @@ void Server::processCommand(Client* client, const char* message)
 					return;
 				}
 
+				invitedClient->setModerator(false);
 				command.getChannelByName(*(it + 2))->AddUser2Channel(invitedClient);
 				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
 				command.sendData(invitedClient->getClientSock(), msg);
@@ -219,14 +221,14 @@ void Server::processCommand(Client* client, const char* message)
 				const std::string& name = command.getChannelByName(*(it + 2))->getChannelName();
 				const std::string& ms = command.standardMsg(invitedClient->getNickName(), invitedClient->getUserName(), invitedClient->getIpAddress()) + " JOIN " + name + " * " + invitedClient->getRealName() + " " + RPL_WELCOME(invitedClient->getNickName(), "IRC");
 
-				command.sendData(invitedClient->getClientSock(), ms);
+				// command.sendData(invitedClient->getClientSock(), ms);
+				command.getChannelByName(*(it + 2))->sendToAll(ms);
 				return;
 			}
 			else
 			{
 				const std::string &msg = ":IRC " + ERR_NOSUCHNICK(client->getNickName(), *(it + 1));
 				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-				return;
 				return;
 			}
 			return;
@@ -236,32 +238,28 @@ void Server::processCommand(Client* client, const char* message)
 		{
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)) 
 				|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
-			{
 				return ;
-			}
-			std::cout <<"channel::" <<*(it+1) << std::endl;
-			std::cout <<"nick ::" << *(it+2) << std::endl;
-			// while(1);
 			if(*(it + 2)->begin() == '#')
 			{
-				const std::string  &msg = ":IRC : KICK : SOMTHING WRONG .. !!\r\n";
+				const std::string  &msg = RPL_KICKED(client->getUserName(), *(it + 1), client->getNickName());
+				
 				command.sendData(client->getClientSock(), msg);
 				return;
 			}
-			std::cout << "wesh hna\n";
-			// Client *kickedClient = getClientFromServer(*(it + 2));
-			Client kickedClient = *(command.getChannelByName(*(it+1))->getClientFromChannelByName(*(it + 2)));
-			std::cout << "kkkkkkkkkkk\n";
-			// std::cout << kickedClient->getNickName() << "nickanem\n";
-			std::cout << "1" << std::endl;
+			Client *kickedClient = getClientFromServer(*(it + 2));
+			if(!kickedClient)
+			{
+				const std::string  &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), *(it + 1), *(it + 2))  ;
+				command.sendData(client->getClientSock(), msg);
+				return ;
+			}
 			std::string m = " ";
 			if(it + 3 != vec.end())
 				m = getRangeAsString(vec, it + 3, vec.size(), " ");
 			else
 				m = "NO REASON INCLUDED... ";
-			command.kickCommand(client, *(it + 1), *(it + 2), &kickedClient, m);
+			command.kickCommand(client, *(it + 1), *(it + 2), kickedClient, m);
 			return;
-
 		}
 		if(equalStrings(*it, "PART") )
 		{
@@ -273,9 +271,12 @@ void Server::processCommand(Client* client, const char* message)
 			else
 				m = "NO REASON INCLUDED... ";
 			command.partCommand(client, *(it + 1), m);
+
 		}
 		if(equalStrings(*it, "WHO") )
 		{
+			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
+				return ;
 			Channel *channel = command.getChannelByName(*(it + 1));
 			if(!channel)
 			{
@@ -283,30 +284,41 @@ void Server::processCommand(Client* client, const char* message)
 				command.sendData(client->getClientSock(), msg.c_str());
 				return ;
 			}
-            // std::vector<Client> *users = channel->getChannelClientsVector();
-			std::vector<Client>* vec = channel->getChannelClientsVector();
-			// std::vector<Client>::iterator it = vec->begin();
-			// while(it != vec->end())
-			for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); it++) 
-			{
-                Client vec = *it;
-				std::string msg;
-                if (it->isModerator())
-				{
-					// msg = "jj";
-                    msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), "Matrix", vec.getNickName(), "@x", vec.getRealName());
-				}
+			std::vector<Client>* users = channel->getChannelClientsVector();
+			command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
+            for (std::vector<Client>::iterator it = users->begin(); it != users->end(); ++it)
+            {
+                Client user = *it;
+                std::string msg;
+                if (user.isModerator())
+                    msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "@x", user.getRealName());
                 else
-				{
-					// msg = "jj";
-					 msg = ":" + this->serverName  + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), "Matrix", vec.getNickName(), "x", vec.getRealName());
-
-				}
-                command.sendData(client->getClientSock(), msg.c_str());
-				// it++;
+                    msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "x", user.getRealName());
+                send(client->getClientSock(), msg.c_str(), msg.size(), 0);
             }
-         	std::string msg = ":" + this->serverName + RPL_ENDOFWHO(client->getNickName(), channel->getChannelName());
+            std::string msg = ":" + this->serverName + RPL_ENDOFWHO(client->getNickName(),  channel->getChannelName());
             send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+			// std::vector<Client>* vec = channel->getChannelClientsVector();
+			// for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); it++) 
+			// {
+            //     Client vec = *it;
+			// 	std::string msg;
+            //     if (it->isModerator())
+			// 	{
+			// 		 msg = ":"  + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), this->serverName, vec.getNickName(), "@x", vec.getRealName());
+			// 	}
+            //     else
+			// 	{
+			// 		msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), this->serverName, vec.getNickName(), "x", vec.getRealName());
+			// 	}
+            //     command.sendData(client->getClientSock(), msg.c_str());
+            // }
+			// std::string msg = ":IRC " + RPL_ENDOFWHO(client->getNickName(), channel->getChannelName());
+            // send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+		}
+		if(equalStrings(*it, "BOT") )
+		{
+			std::cout << "hello\n";
 		}
 		if(equalStrings(*it, "TOPIC") )
 		{
@@ -322,6 +334,12 @@ void Server::processCommand(Client* client, const char* message)
 				command.sendData(client->getClientSock(), msg.c_str());
 				return ;
 			}
+			if(command.inviteclientcheck(client, channel->getChannelName()) != 3)
+			{
+				const std::string &msg = ":IRC " + ERR_USERNOTINCHANNEL(client->getNickName(), client->getNickName(), channel->getChannelName());
+				send(client->getClientSock(), msg.c_str(), msg.size(), 0);
+				return;
+			}
 			if((it + 2) == vec.end())
 			{
 				std::string topic = channel->getTopic();
@@ -330,21 +348,9 @@ void Server::processCommand(Client* client, const char* message)
 				std::cout << r << std::endl;
 				return;
 			}
-			else if (it+2 != vec.end())
+			else if ((it+2) != vec.end())
 			{
-					// std::cout << "here\n";
-    				// const std::string& g = *(it + 1); 
-					// if(g[1] == ':')
-					std::cout << "before EQual :" << (it + 2)->size() << std::endl;
-					if(equalStrings(*(it + 2), "::"))
-					{
-						(it + 2)->size();
-						std::cout << "555\n";
-						channel->setTopic("No topic is set");
-						return;
-					}
-
-				if(channel->getTopicMode() == 1)
+				if(command.getChannelByName(*(it + 1))->getTopicMode() == true)
 				{
 					if(!client->isModerator())
 					{
@@ -353,6 +359,15 @@ void Server::processCommand(Client* client, const char* message)
 						return ;
 					}
 				}
+					std::cout << "before EQual :" << (it + 2)->size() << std::endl;
+					// if(((it + 2)->substr(1)).empty())
+					if(equalStrings(*(it + 2), "::"))
+					{
+						(it + 2)->size();
+						std::cout << "555\n";
+						channel->setTopic("No topic is set");
+						return;
+					}
 				std::cout << "6\n";
 				std::string range = getRangeAsString(vec, it + 2, vec.size(), " ");
 				channel->setTopic(range);

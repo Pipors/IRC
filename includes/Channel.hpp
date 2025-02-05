@@ -52,6 +52,7 @@ public :
 	std::vector<Client> *getChannelClientsVector();
 	Client *getClientFromChannelByName(const std::string& name);
 
+
 private :
 	bool requirePasswd;                    // for joining a channel
 	bool inviteMode;

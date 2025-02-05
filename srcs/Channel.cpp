@@ -269,3 +269,25 @@ void Channel::sendToAll(const std::string& msg)
         it++;
     }
 }
+
+
+size_t Channel::addModerator(const Client &client)
+{
+	this->operators.push_back(client);
+	return operators.size();
+
+}
+
+
+bool Channel::checkClientIsModerator(const int& fd)
+{
+	std::vector<Client>::iterator it = operators.begin();
+	while (it != operators.end())
+	{
+	
+		if (it->getClientSock() == fd)
+			return true;
+		it++;
+	}
+	return false;
+}

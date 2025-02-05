@@ -197,7 +197,7 @@ void Server::processCommand(Client* client, const char* message)
 					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 					return ;
 				}
-				if(client->isModerator() != true)
+				if(command.getChannelByName(*(it + 2))->checkClientIsModerator(client->getClientSock()) == false)
 				{
 					const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
 					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
@@ -352,7 +352,7 @@ void Server::processCommand(Client* client, const char* message)
 			{
 				if(command.getChannelByName(*(it + 1))->getTopicMode() == true)
 				{
-					if(!client->isModerator())
+					if(command.getChannelByName(*(it + 1))->checkClientIsModerator(client->getClientSock()))
 					{
 						const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
 						send(client->getClientSock(), msg.c_str(), msg.size(), 0);
